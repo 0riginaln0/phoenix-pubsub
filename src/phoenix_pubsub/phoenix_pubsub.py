@@ -16,15 +16,13 @@ Registry = Dict[Topic, Set[Subscriber]]
 class PubSub:
     """
     A topic-based publish-subscribe system for asynchronous message passing.
-
-    Attributes:
-        _topics (Registry): Dictionary mapping topics to sets of subscriber queues
-        _lock (asyncio.Lock): Lock for thread-safe operations on the registry
     """
 
     def __init__(self):
         self._topics: Registry = defaultdict(set)
+        "Dictionary mapping topics to sets of subscriber queues"
         self._lock = asyncio.Lock()
+        "Lock for thread-safe operations on the registry"
 
     async def subscribe(self, subscriber: asyncio.Queue, *topics: str):
         """
@@ -96,7 +94,7 @@ class PubSub:
             ```
 
         Note:
-            - Slow consumers may miss messages if their queue is full (see _try_put_message)
+            - Slow consumers may miss messages if their queue is full
             - The broadcast is asynchronous - it doesn't wait for subscribers to process messages
         """
         topic_subscribers = []
