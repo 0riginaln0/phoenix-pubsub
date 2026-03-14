@@ -72,11 +72,10 @@ async def main():
     await pubsub.broadcast("Earthquake!", "alerts")
     await pubsub.broadcast("Score update", "sports")
 
-    # Order of reception may vary
     topic, msg = await queue.get()
-    print(topic, msg)  # alerts Earthquake!   (or sports Score update)
+    print(topic, msg)  # alerts Earthquake!
     topic, msg = await queue.get()
-    print(topic, msg)  # sports Score update  (or alerts Earthquake!)
+    print(topic, msg)  # sports Score update
 
 asyncio.run(main())
 ```
