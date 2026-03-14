@@ -1,9 +1,3 @@
-"""
-PubSub Module - A topic-based publish-subscribe system for asyncio applications.
-
-For the usage examples check out test.py and README.md
-"""
-
 import asyncio
 from collections import defaultdict
 from typing import Any, Dict, Set
