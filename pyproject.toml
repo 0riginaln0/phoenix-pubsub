@@ -1,0 +1,21 @@
+[project]
+name = "phoenix-pubsub"
+version = "0.1.0"
+description = "A topic-based publish-subscribe system for asyncio applications, inspired by Phoenix's PubSub"
+readme = "README.md"
+authors = [
+    { name = "Ryzh", email = "gooddmitriy@mail.ru" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+phoenix-pubsub = "phoenix_pubsub:main"
+
+[build-system]
+requires = ["uv_build>=0.9.22,<0.10.0"]
+build-backend = "uv_build"
+
+[project.urls]
+Homepage = "https://github.com/0riginaln0/phoenix-pubsub"
+Source   = "https://github.com/0riginaln0/phoenix-pubsub"
