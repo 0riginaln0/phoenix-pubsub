@@ -2,6 +2,10 @@
 
 A topic-based publish‑subscribe system for `asyncio` applications, inspired by the [Phoenix PubSub](https://hexdocs.pm/phoenix_pubsub/Phoenix.PubSub.html) library from the Elixir Phoenix framework.
 
+- [Online API Documentation](https://0riginaln0.github.io/phoenix-pubsub/phoenix_pubsub.html) 
+- [PyPi](https://pypi.org/project/phoenix-pubsub/)
+- [Source code](https://github.com/0riginaln0/phoenix-pubsub)
+
 ## Features
 
 - Subscribe to one or more topics
