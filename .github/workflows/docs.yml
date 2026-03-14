@@ -29,7 +29,7 @@ jobs:
       - run: pip install pdoc
       # ADJUST THIS: build your documentation into docs/.
       # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
-      - run: pdoc src/phoenix_pubsub/ -o ./docs --docformat google
+      - run: pdoc src/phoenix_pubsub/ -o ./docs --docformat google -t custom-mode
 
       - uses: actions/upload-pages-artifact@v4
         with:
