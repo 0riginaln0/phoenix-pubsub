@@ -52,7 +52,7 @@ span.linenos { color: #676b6f; background-color: transparent; padding-left: 5px;
 .pdoc-code .py { color: #e1e1e6 } /* Name.Property */
 .pdoc-code .nt { color: #F77483 } /* Name.Tag */
 .pdoc-code .nv { color: #e1e1e6 } /* Name.Variable */
-.pdoc-code .ow { color: #F77483 } /* Operator.Word */
+.pdoc-code .ow { color: #E58AC9 } /* Operator.Word */
 .pdoc-code .w { color: #e1e1e6 } /* Text.Whitespace */
 .pdoc-code .mb { color: #FFA94D } /* Literal.Number.Bin */
 .pdoc-code .mf { color: #FFA94D } /* Literal.Number.Float */
