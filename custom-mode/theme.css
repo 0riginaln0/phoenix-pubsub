@@ -8,10 +8,10 @@
     --link: #0078D7;
     --link-hover: #008cff;
     --code: #f3f0f0; /*#f3f0f0*/ /*e0e0e0*/
-    --active: #f0f0f0;
+    --active: #f3f0f0;
     --accent: #f3f0f0;
     --accent2: #e0e0e0;
-    --nav-hover: rgba(255, 255, 255, .2);
+    --nav-hover: rgba(150, 150, 150, 0.1);
     --name: #0078D7;
     --def: #9C27B0;
     --annotation: #9e580d;
