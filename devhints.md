@@ -1,10 +1,6 @@
 Generate docs:
 
-`uvx pdoc src/phoenix_pubsub/ -o ./docs --docformat google -t custom-mode`
-
-Copy themes from custom-mode to docs:
-
-`cp -r custom-mode/* docs/*`
+`uvx pdoc src/phoenix_pubsub/ -o ./docs --docformat google`
 
 Remove from the header lines which start with:
 
