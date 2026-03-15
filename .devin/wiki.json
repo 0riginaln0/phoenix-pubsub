@@ -1,0 +1,292 @@
+{
+  "repo_notes": [
+    {
+      "content": ""
+    }
+  ],
+  "pages": [
+    {
+      "title": "Overview",
+      "purpose": "Introduce phoenix-pubsub: a topic-based publish-subscribe system for asyncio applications, its design philosophy, and key features",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Installation and Requirements",
+      "purpose": "Guide users through installing phoenix-pubsub, including Python version requirements and the zero-dependency architecture",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Quick Start Guide",
+      "purpose": "Provide a rapid introduction with basic code examples showing subscribe, broadcast, and unsubscribe operations",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Core Concepts",
+      "purpose": "Explain the fundamental architecture and design patterns of the PubSub system",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "The PubSub Class",
+      "purpose": "Detailed documentation of the PubSub class, its internal architecture, the topic registry, and concurrency control with asyncio.Lock",
+      "parent": "Core Concepts",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Type System: Topics, Messages, and Peers",
+      "purpose": "Explain the type aliases and their roles: Topic (str), Message (Any), Peer (asyncio.Queue), Subscribers, and Dispatcher",
+      "parent": "Core Concepts",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Subscription Management",
+      "purpose": "How subscribe() and unsubscribe() work, metadata attachment, and the subscription lifecycle",
+      "parent": "Core Concepts",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Message Broadcasting",
+      "purpose": "Explain broadcast() and broadcast_from() methods, message delivery mechanics, and the two-phase lock strategy",
+      "parent": "Core Concepts",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Custom Dispatchers",
+      "purpose": "Deep dive into the dispatcher mechanism, the synchronous_dispatcher implementation, the concurrent_dispatcher implementation, and creating custom routing logic",
+      "parent": "Core Concepts",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Usage Patterns and Examples",
+      "purpose": "Demonstrate common usage patterns with practical code examples",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Basic Pub/Sub Pattern",
+      "purpose": "Simple subscribe-and-broadcast scenarios with multiple topics and subscribers",
+      "parent": "Usage Patterns and Examples",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Publisher Exclusion (Chat Pattern)",
+      "purpose": "Using broadcast_from() to exclude the sender from receiving their own messages",
+      "parent": "Usage Patterns and Examples",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Metadata-Based Filtering",
+      "purpose": "Implementing content-based routing using subscriber metadata and custom dispatchers",
+      "parent": "Usage Patterns and Examples",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Handling Slow Consumers",
+      "purpose": "Understanding message dropping behavior for queues at maxsize and backpressure handling",
+      "parent": "Usage Patterns and Examples",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Multi-Topic Broadcasting",
+      "purpose": "Broadcasting a single message to multiple topics simultaneously",
+      "parent": "Usage Patterns and Examples",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "API Reference",
+      "purpose": "Complete API documentation for all public classes, methods, and type aliases",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Development Guide",
+      "purpose": "Guide for contributors: project structure, tooling, and development workflows",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Project Structure and Configuration",
+      "purpose": "Explain the repository layout, pyproject.toml configuration, and uv-based dependency management",
+      "parent": "Development Guide",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Build and Release Workflow",
+      "purpose": "Step-by-step guide to versioning, building, tagging, and publishing releases using uv",
+      "parent": "Development Guide",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Documentation Generation",
+      "purpose": "How documentation is generated with pdoc, theme customization, and the CI/CD deployment pipeline",
+      "parent": "Development Guide",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Testing and Validation",
+      "purpose": "Overview of the test suite structure and how to run integration tests",
+      "parent": "Development Guide",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Advanced Topics",
+      "purpose": "In-depth coverage of advanced features and implementation details",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Concurrency and Thread Safety",
+      "purpose": "Detailed explanation of the asyncio.Lock strategy, the two-phase broadcast approach, and race condition prevention",
+      "parent": "Advanced Topics",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Asyncio Integration",
+      "purpose": "How phoenix-pubsub leverages asyncio.Queue, event loops, and async/await patterns",
+      "parent": "Advanced Topics",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Design Decisions and Trade-offs",
+      "purpose": "Explain architectural choices: zero dependencies, message dropping vs blocking, snapshot-based broadcasting",
+      "parent": "Advanced Topics",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Documentation System Internals",
+      "purpose": "For maintainers: how the documentation website works, including search and theming",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Search Functionality",
+      "purpose": "How the elasticlunr-based client-side search is implemented and indexed",
+      "parent": "Documentation System Internals",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Theme System",
+      "purpose": "CSS architecture for light/dark themes and syntax highlighting",
+      "parent": "Documentation System Internals",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "CI/CD Pipeline for Docs",
+      "purpose": "GitHub Actions workflow for automated documentation builds and GitHub Pages deployment",
+      "parent": "Documentation System Internals",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    }
+  ]
+}
