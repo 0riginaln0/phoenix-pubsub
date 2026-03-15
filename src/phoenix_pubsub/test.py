@@ -112,7 +112,7 @@ async def test_pubsub():
         pass  # Expected
 
     # 6. Custom dispatcher
-    def catagory_filter_dispatcher(
+    def category_filter_dispatcher(
         topic: Topic,
         message: Message,
         subscribers: Subscribers,
@@ -156,9 +156,9 @@ async def test_pubsub():
     await pubsub.subscribe(queue3, "news", metadata={"interests": ["technology"]})
 
     sports_msg = {"category": "sports", "content": "Game result 3-2"}
-    await pubsub.broadcast(sports_msg, "news", dispatcher=catagory_filter_dispatcher)
+    await pubsub.broadcast(sports_msg, "news", dispatcher=category_filter_dispatcher)
     politics_msg = {"category": "politics", "content": "Election update"}
-    await pubsub.broadcast(politics_msg, "news", dispatcher=catagory_filter_dispatcher)
+    await pubsub.broadcast(politics_msg, "news", dispatcher=category_filter_dispatcher)
 
     msgs1 = []
     while not queue1.empty():

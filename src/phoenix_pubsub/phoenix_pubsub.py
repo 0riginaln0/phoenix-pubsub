@@ -43,7 +43,7 @@ class PubSub:
 
     def __init__(self):
         self._topics: Registry = defaultdict(dict)
-        "Dictionary mapping topics to sets of subscriber queues"
+        "Dictionary mapping Topics to Subscribers"
         self._lock = asyncio.Lock()
         "Lock for thread-safe operations on the registry"
 
@@ -54,7 +54,7 @@ class PubSub:
         Subscribe a queue to one or more topics.
 
         Args:
-            subscriber: The queue that will receive messages.
+            peer: The queue that will receive messages.
                 This queue will receive messages as (topic, message) tuples.
             *topics: Variable number of topic strings to subscribe to.
                 The subscriber will receive messages published to any of these topics.
@@ -73,7 +73,7 @@ class PubSub:
             await pubsub.subscribe(queue, "news", "weather", "sports")
 
             # Provide metadata
-            await pubsub.subscribe(quque, "stock", metadata={"priority": 10})
+            await pubsub.subscribe(queue, "stock", metadata={"priority": 10})
             ```
         """
         metadata = metadata or {}
@@ -86,7 +86,7 @@ class PubSub:
         Unsubscribe a queue from one or more topics.
 
         Args:
-            subscriber: The queue to unsubscribe.
+            peer: The queue to unsubscribe.
             *topics: Topics to unsubscribe from.
 
         Example:
@@ -157,7 +157,7 @@ class PubSub:
 
         Args:
             publisher: The queue of the publisher to exclude.
-                This subscriber will not receive the message.
+                This peer (the publisher) will not receive the message.
             message: The message to broadcast.
             *topics: Topics to broadcast to.
             dispatcher: A callable that handles the actual message delivery.
@@ -169,7 +169,7 @@ class PubSub:
             publisher_queue = asyncio.Queue()
             chat_queue = asyncio.Queue()
             await pubsub.subscribe(publisher_queue, "chat")
-            await pubsub.subscribe(chat, "chat")
+            await pubsub.subscribe(chat_queue, "chat")
 
             await pubsub.broadcast_from(
                 publisher_queue,

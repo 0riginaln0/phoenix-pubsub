@@ -120,7 +120,7 @@ phoenix_pubsub    </h1>
 </span><span id="PubSub-44"><a href="#PubSub-44"><span class="linenos"> 44</span></a>
 </span><span id="PubSub-45"><a href="#PubSub-45"><span class="linenos"> 45</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 </span><span id="PubSub-46"><a href="#PubSub-46"><span class="linenos"> 46</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="p">:</span> <span class="n">Registry</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-</span><span id="PubSub-47"><a href="#PubSub-47"><span class="linenos"> 47</span></a>        <span class="s2">&quot;Dictionary mapping topics to sets of subscriber queues&quot;</span>
+</span><span id="PubSub-47"><a href="#PubSub-47"><span class="linenos"> 47</span></a>        <span class="s2">&quot;Dictionary mapping Topics to Subscribers&quot;</span>
 </span><span id="PubSub-48"><a href="#PubSub-48"><span class="linenos"> 48</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
 </span><span id="PubSub-49"><a href="#PubSub-49"><span class="linenos"> 49</span></a>        <span class="s2">&quot;Lock for thread-safe operations on the registry&quot;</span>
 </span><span id="PubSub-50"><a href="#PubSub-50"><span class="linenos"> 50</span></a>
@@ -131,7 +131,7 @@ phoenix_pubsub    </h1>
 </span><span id="PubSub-55"><a href="#PubSub-55"><span class="linenos"> 55</span></a><span class="sd">        Subscribe a queue to one or more topics.</span>
 </span><span id="PubSub-56"><a href="#PubSub-56"><span class="linenos"> 56</span></a>
 </span><span id="PubSub-57"><a href="#PubSub-57"><span class="linenos"> 57</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub-58"><a href="#PubSub-58"><span class="linenos"> 58</span></a><span class="sd">            subscriber: The queue that will receive messages.</span>
+</span><span id="PubSub-58"><a href="#PubSub-58"><span class="linenos"> 58</span></a><span class="sd">            peer: The queue that will receive messages.</span>
 </span><span id="PubSub-59"><a href="#PubSub-59"><span class="linenos"> 59</span></a><span class="sd">                This queue will receive messages as (topic, message) tuples.</span>
 </span><span id="PubSub-60"><a href="#PubSub-60"><span class="linenos"> 60</span></a><span class="sd">            *topics: Variable number of topic strings to subscribe to.</span>
 </span><span id="PubSub-61"><a href="#PubSub-61"><span class="linenos"> 61</span></a><span class="sd">                The subscriber will receive messages published to any of these topics.</span>
@@ -150,7 +150,7 @@ phoenix_pubsub    </h1>
 </span><span id="PubSub-74"><a href="#PubSub-74"><span class="linenos"> 74</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;news&quot;, &quot;weather&quot;, &quot;sports&quot;)</span>
 </span><span id="PubSub-75"><a href="#PubSub-75"><span class="linenos"> 75</span></a>
 </span><span id="PubSub-76"><a href="#PubSub-76"><span class="linenos"> 76</span></a><span class="sd">            # Provide metadata</span>
-</span><span id="PubSub-77"><a href="#PubSub-77"><span class="linenos"> 77</span></a><span class="sd">            await pubsub.subscribe(quque, &quot;stock&quot;, metadata={&quot;priority&quot;: 10})</span>
+</span><span id="PubSub-77"><a href="#PubSub-77"><span class="linenos"> 77</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;stock&quot;, metadata={&quot;priority&quot;: 10})</span>
 </span><span id="PubSub-78"><a href="#PubSub-78"><span class="linenos"> 78</span></a><span class="sd">            ```</span>
 </span><span id="PubSub-79"><a href="#PubSub-79"><span class="linenos"> 79</span></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="PubSub-80"><a href="#PubSub-80"><span class="linenos"> 80</span></a>        <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span> <span class="ow">or</span> <span class="p">{}</span>
@@ -163,7 +163,7 @@ phoenix_pubsub    </h1>
 </span><span id="PubSub-87"><a href="#PubSub-87"><span class="linenos"> 87</span></a><span class="sd">        Unsubscribe a queue from one or more topics.</span>
 </span><span id="PubSub-88"><a href="#PubSub-88"><span class="linenos"> 88</span></a>
 </span><span id="PubSub-89"><a href="#PubSub-89"><span class="linenos"> 89</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub-90"><a href="#PubSub-90"><span class="linenos"> 90</span></a><span class="sd">            subscriber: The queue to unsubscribe.</span>
+</span><span id="PubSub-90"><a href="#PubSub-90"><span class="linenos"> 90</span></a><span class="sd">            peer: The queue to unsubscribe.</span>
 </span><span id="PubSub-91"><a href="#PubSub-91"><span class="linenos"> 91</span></a><span class="sd">            *topics: Topics to unsubscribe from.</span>
 </span><span id="PubSub-92"><a href="#PubSub-92"><span class="linenos"> 92</span></a>
 </span><span id="PubSub-93"><a href="#PubSub-93"><span class="linenos"> 93</span></a><span class="sd">        Example:</span>
@@ -234,7 +234,7 @@ phoenix_pubsub    </h1>
 </span><span id="PubSub-158"><a href="#PubSub-158"><span class="linenos">158</span></a>
 </span><span id="PubSub-159"><a href="#PubSub-159"><span class="linenos">159</span></a><span class="sd">        Args:</span>
 </span><span id="PubSub-160"><a href="#PubSub-160"><span class="linenos">160</span></a><span class="sd">            publisher: The queue of the publisher to exclude.</span>
-</span><span id="PubSub-161"><a href="#PubSub-161"><span class="linenos">161</span></a><span class="sd">                This subscriber will not receive the message.</span>
+</span><span id="PubSub-161"><a href="#PubSub-161"><span class="linenos">161</span></a><span class="sd">                This peer (the publisher) will not receive the message.</span>
 </span><span id="PubSub-162"><a href="#PubSub-162"><span class="linenos">162</span></a><span class="sd">            message: The message to broadcast.</span>
 </span><span id="PubSub-163"><a href="#PubSub-163"><span class="linenos">163</span></a><span class="sd">            *topics: Topics to broadcast to.</span>
 </span><span id="PubSub-164"><a href="#PubSub-164"><span class="linenos">164</span></a><span class="sd">            dispatcher: A callable that handles the actual message delivery.</span>
@@ -246,7 +246,7 @@ phoenix_pubsub    </h1>
 </span><span id="PubSub-170"><a href="#PubSub-170"><span class="linenos">170</span></a><span class="sd">            publisher_queue = asyncio.Queue()</span>
 </span><span id="PubSub-171"><a href="#PubSub-171"><span class="linenos">171</span></a><span class="sd">            chat_queue = asyncio.Queue()</span>
 </span><span id="PubSub-172"><a href="#PubSub-172"><span class="linenos">172</span></a><span class="sd">            await pubsub.subscribe(publisher_queue, &quot;chat&quot;)</span>
-</span><span id="PubSub-173"><a href="#PubSub-173"><span class="linenos">173</span></a><span class="sd">            await pubsub.subscribe(chat, &quot;chat&quot;)</span>
+</span><span id="PubSub-173"><a href="#PubSub-173"><span class="linenos">173</span></a><span class="sd">            await pubsub.subscribe(chat_queue, &quot;chat&quot;)</span>
 </span><span id="PubSub-174"><a href="#PubSub-174"><span class="linenos">174</span></a>
 </span><span id="PubSub-175"><a href="#PubSub-175"><span class="linenos">175</span></a><span class="sd">            await pubsub.broadcast_from(</span>
 </span><span id="PubSub-176"><a href="#PubSub-176"><span class="linenos">176</span></a><span class="sd">                publisher_queue,</span>
@@ -294,7 +294,7 @@ dispatcher logic for flexible message routing.</p>
 </span><span id="PubSub.subscribe-55"><a href="#PubSub.subscribe-55"><span class="linenos">55</span></a><span class="sd">        Subscribe a queue to one or more topics.</span>
 </span><span id="PubSub.subscribe-56"><a href="#PubSub.subscribe-56"><span class="linenos">56</span></a>
 </span><span id="PubSub.subscribe-57"><a href="#PubSub.subscribe-57"><span class="linenos">57</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub.subscribe-58"><a href="#PubSub.subscribe-58"><span class="linenos">58</span></a><span class="sd">            subscriber: The queue that will receive messages.</span>
+</span><span id="PubSub.subscribe-58"><a href="#PubSub.subscribe-58"><span class="linenos">58</span></a><span class="sd">            peer: The queue that will receive messages.</span>
 </span><span id="PubSub.subscribe-59"><a href="#PubSub.subscribe-59"><span class="linenos">59</span></a><span class="sd">                This queue will receive messages as (topic, message) tuples.</span>
 </span><span id="PubSub.subscribe-60"><a href="#PubSub.subscribe-60"><span class="linenos">60</span></a><span class="sd">            *topics: Variable number of topic strings to subscribe to.</span>
 </span><span id="PubSub.subscribe-61"><a href="#PubSub.subscribe-61"><span class="linenos">61</span></a><span class="sd">                The subscriber will receive messages published to any of these topics.</span>
@@ -313,7 +313,7 @@ dispatcher logic for flexible message routing.</p>
 </span><span id="PubSub.subscribe-74"><a href="#PubSub.subscribe-74"><span class="linenos">74</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;news&quot;, &quot;weather&quot;, &quot;sports&quot;)</span>
 </span><span id="PubSub.subscribe-75"><a href="#PubSub.subscribe-75"><span class="linenos">75</span></a>
 </span><span id="PubSub.subscribe-76"><a href="#PubSub.subscribe-76"><span class="linenos">76</span></a><span class="sd">            # Provide metadata</span>
-</span><span id="PubSub.subscribe-77"><a href="#PubSub.subscribe-77"><span class="linenos">77</span></a><span class="sd">            await pubsub.subscribe(quque, &quot;stock&quot;, metadata={&quot;priority&quot;: 10})</span>
+</span><span id="PubSub.subscribe-77"><a href="#PubSub.subscribe-77"><span class="linenos">77</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;stock&quot;, metadata={&quot;priority&quot;: 10})</span>
 </span><span id="PubSub.subscribe-78"><a href="#PubSub.subscribe-78"><span class="linenos">78</span></a><span class="sd">            ```</span>
 </span><span id="PubSub.subscribe-79"><a href="#PubSub.subscribe-79"><span class="linenos">79</span></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="PubSub.subscribe-80"><a href="#PubSub.subscribe-80"><span class="linenos">80</span></a>        <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span> <span class="ow">or</span> <span class="p">{}</span>
@@ -328,7 +328,7 @@ dispatcher logic for flexible message routing.</p>
 <h6 id="arguments">Arguments:</h6>
 
 <ul>
-<li><strong>subscriber:</strong>  The queue that will receive messages.
+<li><strong>peer:</strong>  The queue that will receive messages.
 This queue will receive messages as (topic, message) tuples.</li>
 <li>*<strong>topics:</strong>  Variable number of topic strings to subscribe to.
 The subscriber will receive messages published to any of these topics.</li>
@@ -350,7 +350,7 @@ prioritisation).</li>
 <span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span> <span class="s2">&quot;news&quot;</span><span class="p">,</span> <span class="s2">&quot;weather&quot;</span><span class="p">,</span> <span class="s2">&quot;sports&quot;</span><span class="p">)</span>
 
 <span class="c1"># Provide metadata</span>
-<span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">quque</span><span class="p">,</span> <span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">})</span>
+<span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span> <span class="s2">&quot;stock&quot;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">})</span>
 </code></pre>
   </div>
 </blockquote>
@@ -374,7 +374,7 @@ prioritisation).</li>
 </span><span id="PubSub.unsubscribe-87"><a href="#PubSub.unsubscribe-87"><span class="linenos"> 87</span></a><span class="sd">        Unsubscribe a queue from one or more topics.</span>
 </span><span id="PubSub.unsubscribe-88"><a href="#PubSub.unsubscribe-88"><span class="linenos"> 88</span></a>
 </span><span id="PubSub.unsubscribe-89"><a href="#PubSub.unsubscribe-89"><span class="linenos"> 89</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub.unsubscribe-90"><a href="#PubSub.unsubscribe-90"><span class="linenos"> 90</span></a><span class="sd">            subscriber: The queue to unsubscribe.</span>
+</span><span id="PubSub.unsubscribe-90"><a href="#PubSub.unsubscribe-90"><span class="linenos"> 90</span></a><span class="sd">            peer: The queue to unsubscribe.</span>
 </span><span id="PubSub.unsubscribe-91"><a href="#PubSub.unsubscribe-91"><span class="linenos"> 91</span></a><span class="sd">            *topics: Topics to unsubscribe from.</span>
 </span><span id="PubSub.unsubscribe-92"><a href="#PubSub.unsubscribe-92"><span class="linenos"> 92</span></a>
 </span><span id="PubSub.unsubscribe-93"><a href="#PubSub.unsubscribe-93"><span class="linenos"> 93</span></a><span class="sd">        Example:</span>
@@ -400,7 +400,7 @@ prioritisation).</li>
 <h6 id="arguments">Arguments:</h6>
 
 <ul>
-<li><strong>subscriber:</strong>  The queue to unsubscribe.</li>
+<li><strong>peer:</strong>  The queue to unsubscribe.</li>
 <li>*<strong>topics:</strong>  Topics to unsubscribe from.</li>
 </ul>
 
@@ -535,7 +535,7 @@ or prioritisation using the metadata stored with each subscriber.</li>
 </span><span id="PubSub.broadcast_from-158"><a href="#PubSub.broadcast_from-158"><span class="linenos">158</span></a>
 </span><span id="PubSub.broadcast_from-159"><a href="#PubSub.broadcast_from-159"><span class="linenos">159</span></a><span class="sd">        Args:</span>
 </span><span id="PubSub.broadcast_from-160"><a href="#PubSub.broadcast_from-160"><span class="linenos">160</span></a><span class="sd">            publisher: The queue of the publisher to exclude.</span>
-</span><span id="PubSub.broadcast_from-161"><a href="#PubSub.broadcast_from-161"><span class="linenos">161</span></a><span class="sd">                This subscriber will not receive the message.</span>
+</span><span id="PubSub.broadcast_from-161"><a href="#PubSub.broadcast_from-161"><span class="linenos">161</span></a><span class="sd">                This peer (the publisher) will not receive the message.</span>
 </span><span id="PubSub.broadcast_from-162"><a href="#PubSub.broadcast_from-162"><span class="linenos">162</span></a><span class="sd">            message: The message to broadcast.</span>
 </span><span id="PubSub.broadcast_from-163"><a href="#PubSub.broadcast_from-163"><span class="linenos">163</span></a><span class="sd">            *topics: Topics to broadcast to.</span>
 </span><span id="PubSub.broadcast_from-164"><a href="#PubSub.broadcast_from-164"><span class="linenos">164</span></a><span class="sd">            dispatcher: A callable that handles the actual message delivery.</span>
@@ -547,7 +547,7 @@ or prioritisation using the metadata stored with each subscriber.</li>
 </span><span id="PubSub.broadcast_from-170"><a href="#PubSub.broadcast_from-170"><span class="linenos">170</span></a><span class="sd">            publisher_queue = asyncio.Queue()</span>
 </span><span id="PubSub.broadcast_from-171"><a href="#PubSub.broadcast_from-171"><span class="linenos">171</span></a><span class="sd">            chat_queue = asyncio.Queue()</span>
 </span><span id="PubSub.broadcast_from-172"><a href="#PubSub.broadcast_from-172"><span class="linenos">172</span></a><span class="sd">            await pubsub.subscribe(publisher_queue, &quot;chat&quot;)</span>
-</span><span id="PubSub.broadcast_from-173"><a href="#PubSub.broadcast_from-173"><span class="linenos">173</span></a><span class="sd">            await pubsub.subscribe(chat, &quot;chat&quot;)</span>
+</span><span id="PubSub.broadcast_from-173"><a href="#PubSub.broadcast_from-173"><span class="linenos">173</span></a><span class="sd">            await pubsub.subscribe(chat_queue, &quot;chat&quot;)</span>
 </span><span id="PubSub.broadcast_from-174"><a href="#PubSub.broadcast_from-174"><span class="linenos">174</span></a>
 </span><span id="PubSub.broadcast_from-175"><a href="#PubSub.broadcast_from-175"><span class="linenos">175</span></a><span class="sd">            await pubsub.broadcast_from(</span>
 </span><span id="PubSub.broadcast_from-176"><a href="#PubSub.broadcast_from-176"><span class="linenos">176</span></a><span class="sd">                publisher_queue,</span>
@@ -576,7 +576,7 @@ or prioritisation using the metadata stored with each subscriber.</li>
 
 <ul>
 <li><strong>publisher:</strong>  The queue of the publisher to exclude.
-This subscriber will not receive the message.</li>
+This peer (the publisher) will not receive the message.</li>
 <li><strong>message:</strong>  The message to broadcast.</li>
 <li>*<strong>topics:</strong>  Topics to broadcast to.</li>
 <li><strong>dispatcher:</strong>  A callable that handles the actual message delivery.
@@ -591,7 +591,7 @@ or prioritisation using the metadata stored with each subscriber.</li>
 <pre><span></span><code><span class="n">publisher_queue</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
 <span class="n">chat_queue</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
 <span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">publisher_queue</span><span class="p">,</span> <span class="s2">&quot;chat&quot;</span><span class="p">)</span>
-<span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">chat</span><span class="p">,</span> <span class="s2">&quot;chat&quot;</span><span class="p">)</span>
+<span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">chat_queue</span><span class="p">,</span> <span class="s2">&quot;chat&quot;</span><span class="p">)</span>
 
 <span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">broadcast_from</span><span class="p">(</span>
     <span class="n">publisher_queue</span><span class="p">,</span>

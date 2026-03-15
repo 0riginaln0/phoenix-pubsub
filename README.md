@@ -11,7 +11,6 @@ A topic-based publish‑subscribe system for `asyncio` applications, inspired by
 - Subscribe to one or more topics
 - Broadcast messages to all subscribers of a topic
 - Broadcast messages while excluding the publisher itself
-- Graceful handling of slow consumers (messages are dropped when a subscriber’s queue is full)
 - Subscribers metadata & Custom dispatchers – attach metadata to subscriptions and implement your own delivery logic (filtering, fast‑laning, etc.) by passing a dispatcher function `broadcast` / `broadcast_from`
 
 ## Installation
@@ -184,7 +183,9 @@ from phoenix_pubsub import PubSub, Topic, Message, Subscribers, Peer
 from typing import Optional
 
 async def main():
-    def catagory_filter_dispatcher(
+    pubsub = PubSub()
+
+    def category_filter_dispatcher(
         topic: Topic,
         message: Message,
         subscribers: Subscribers,
@@ -230,9 +231,9 @@ async def main():
     await pubsub.subscribe(queue3, "news", metadata={"interests": ["technology"]})
 
     sports_msg = {"category": "sports", "content": "Game result 3-2"}
-    await pubsub.broadcast(sports_msg, "news", dispatcher=catagory_filter_dispatcher)
+    await pubsub.broadcast(sports_msg, "news", dispatcher=category_filter_dispatcher)
     politics_msg = {"category": "politics", "content": "Election update"}
-    await pubsub.broadcast(politics_msg, "news", dispatcher=catagory_filter_dispatcher)
+    await pubsub.broadcast(politics_msg, "news", dispatcher=category_filter_dispatcher)
 
     for i, q in enumerate([queue1, queue2, queue3], 1):
         received = []
