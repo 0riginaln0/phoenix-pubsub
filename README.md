@@ -12,6 +12,7 @@ A topic-based publish‑subscribe system for `asyncio` applications, inspired by
 - Broadcast messages to all subscribers of a topic
 - Broadcast messages while excluding the publisher itself
 - Graceful handling of slow consumers (messages are dropped when a subscriber’s queue is full)
+- Subscribers metadata & Custom dispatchers – attach metadata to subscriptions and implement your own delivery logic (filtering, fast‑laning, etc.) by passing a dispatcher function `broadcast` / `broadcast_from`
 
 ## Installation
 
@@ -174,3 +175,75 @@ async def main():
 
 asyncio.run(main())
 ```
+
+### Custom dispatcher
+
+```python
+import asyncio
+from phoenix_pubsub import PubSub, Topic, Message, Subscribers, Peer
+from typing import Optional
+
+async def main():
+    def catagory_filter_dispatcher(
+        topic: Topic,
+        message: Message,
+        subscribers: Subscribers,
+        publisher: Optional[Peer] = None,
+    ) -> None:
+        """
+        Deliver message only to subscribers whose 'interests' metadata list
+        contains the message's 'category' field.
+        """
+
+        def try_put_message(peer: asyncio.Queue, topic: str, message: Message):
+            try:
+                peer.put_nowait((topic, message))
+            except (asyncio.QueueFull, asyncio.QueueShutDown):
+                pass
+
+        if not isinstance(message, dict) or "category" not in message:
+            return
+
+        category = message["category"]
+
+        peers = []
+        for peer, metadata in subscribers.items():
+            interests = metadata.get("interests", [])
+            if category in interests:
+                peers.append(peer)
+
+        if publisher:  # broadcast_from
+            for peer in peers:
+                if peer != publisher:
+                    try_put_message(peer, topic, message)
+        else:  # broadcast
+            for peer in peers:
+                try_put_message(peer, topic, message)
+
+    queue1 = asyncio.Queue()
+    await pubsub.subscribe(
+        queue1, "news", metadata={"interests": ["sports", "politics"]}
+    )
+    queue2 = asyncio.Queue()
+    await pubsub.subscribe(queue2, "news", metadata={"interests": ["sports"]})
+    queue3 = asyncio.Queue()
+    await pubsub.subscribe(queue3, "news", metadata={"interests": ["technology"]})
+
+    sports_msg = {"category": "sports", "content": "Game result 3-2"}
+    await pubsub.broadcast(sports_msg, "news", dispatcher=catagory_filter_dispatcher)
+    politics_msg = {"category": "politics", "content": "Election update"}
+    await pubsub.broadcast(politics_msg, "news", dispatcher=catagory_filter_dispatcher)
+
+    for i, q in enumerate([queue1, queue2, queue3], 1):
+        received = []
+        while not q.empty():
+            received.append(await q.get())
+        print(f"Subscriber {i} received: {received}")
+        # Subscriber 1 received: [('news', {'category': 'sports', 'content': 'Game result 3-2'}), ('news', {'category': 'politics', 'content': 'Election update'})]
+        # Subscriber 2 received: [('news', {'category': 'sports', 'content': 'Game result 3-2'})]
+        # Subscriber 3 received: []        
+
+
+asyncio.run(main())
+```
+

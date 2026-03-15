@@ -1,32 +1,55 @@
 import asyncio
 from collections import defaultdict
-from typing import Any
+from typing import Any, Optional, Callable
 
 Topic = str
-Subscriber = asyncio.Queue
-Registry = dict[Topic, set[Subscriber]]
+Message = Any
+Peer = asyncio.Queue
+Subscribers = dict[Peer, dict]
+Registry = dict[Topic, Subscribers]
+Dispatcher = Callable[[Topic, Message, Subscribers, Optional[Peer]], None]
 
 
-def try_put_message(subscriber: asyncio.Queue, topic: str, message: Any):
-    try:
-        subscriber.put_nowait((topic, message))
-    except (asyncio.QueueFull, asyncio.QueueShutDown):
-        # Handle slow consumers – you might want to drop or log
-        pass
+def default_dispatcher(
+    topic: Topic,
+    message: Message,
+    subscribers: Subscribers,
+    publisher: Optional[Peer] = None,
+) -> None:
+    def try_put_message(peer: asyncio.Queue, topic: str, message: Message):
+        try:
+            peer.put_nowait((topic, message))
+        except (asyncio.QueueFull, asyncio.QueueShutDown):
+            # Handle slow consumers – you might want to drop or log
+            pass
+
+    if publisher:  # broadcast_from
+        for peer, _metadata in subscribers.items():
+            if peer is publisher:
+                continue
+            try_put_message(peer, topic, message)
+    else:  # broadcast
+        for peer in subscribers.keys():
+            try_put_message(peer, topic, message)
 
 
 class PubSub:
     """
     A topic-based publish-subscribe system for asynchronous message passing.
+
+    Supports attaching arbitrary metadata to subscriptions, allowing custom
+    dispatcher logic for flexible message routing.
     """
 
     def __init__(self):
-        self._topics: Registry = defaultdict(set)
+        self._topics: Registry = defaultdict(dict)
         "Dictionary mapping topics to sets of subscriber queues"
         self._lock = asyncio.Lock()
         "Lock for thread-safe operations on the registry"
 
-    async def subscribe(self, subscriber: asyncio.Queue, *topics: str):
+    async def subscribe(
+        self, peer: asyncio.Queue, *topics: str, metadata: Optional[dict] = None
+    ) -> None:
         """
         Subscribe a queue to one or more topics.
 
@@ -35,6 +58,9 @@ class PubSub:
                 This queue will receive messages as (topic, message) tuples.
             *topics (str): Variable number of topic strings to subscribe to.
                 The subscriber will receive messages published to any of these topics.
+            metadata (Optional[dict]): Arbitrary data attached to this subscription.
+                The dispatcher can use it for custom delivery logic (e.g., filtering,
+                prioritisation).
 
         Example:
             ```python
@@ -45,13 +71,17 @@ class PubSub:
 
             # Subscribe to multiple topics
             await pubsub.subscribe(queue, "news", "weather", "sports")
+
+            # Provide metadata
+            await pubsub.subscribe(quque, "stock", metadata={"priority": 10})
             ```
         """
+        metadata = metadata or {}
         async with self._lock:
             for topic in topics:
-                self._topics[topic].add(subscriber)
+                self._topics[topic][peer] = metadata
 
-    async def unsubscribe(self, subscriber: asyncio.Queue, *topics: str):
+    async def unsubscribe(self, peer: asyncio.Queue, *topics: str):
         """
         Unsubscribe a queue from one or more topics.
 
@@ -71,17 +101,25 @@ class PubSub:
         async with self._lock:
             for topic in topics:
                 if subscribers := self._topics.get(topic):
-                    subscribers.discard(subscriber)
+                    subscribers.pop(peer, None)
                     if not subscribers:
                         del self._topics[topic]
 
-    async def broadcast(self, message: Any, *topics: str):
+    async def broadcast(
+        self,
+        message: Message,
+        *topics: str,
+        dispatcher: Dispatcher = default_dispatcher,
+    ):
         """
         Broadcast a message to all subscribers of the specified topics.
 
         Args:
             message (Any): The message to broadcast.
             *topics (str): Topics to broadcast to.
+            dispatcher (Dispatcher): A callable that handles the actual message delivery.
+                Custom dispatchers can implement filtering, transformation,
+                or prioritisation using the metadata stored with each subscriber.
 
         Example:
             ```python
@@ -98,18 +136,21 @@ class PubSub:
             - Slow consumers may miss messages if their queue is full
             - The broadcast is asynchronous - it doesn't wait for subscribers to process messages
         """
-        pending: list[tuple[Topic, set[Subscriber]]] = []
+        pending: list[tuple[Topic, dict[Peer, dict]]] = []
         async with self._lock:
             for topic in topics:
-                if subscribers := self._topics.get(topic, set()).copy():
-                    pending.append((topic, subscribers))
+                if subscribers := self._topics.get(topic):
+                    pending.append((topic, subscribers.copy()))
 
         for topic, subscribers in pending:
-            for subscriber in subscribers:
-                try_put_message(subscriber, topic, message)
+            dispatcher(topic, message, subscribers, None)
 
     async def broadcast_from(
-        self, publisher: asyncio.Queue, message: Any, *topics: str
+        self,
+        publisher: asyncio.Queue,
+        message: Message,
+        *topics: str,
+        dispatcher: Dispatcher = default_dispatcher,
     ):
         """
         Broadcast a message to all subscribers except the publisher itself.
@@ -119,6 +160,9 @@ class PubSub:
                 This subscriber will not receive the message.
             message (Any): The message to broadcast.
             *topics (str): Topics to broadcast to.
+            dispatcher (Dispatcher): A callable that handles the actual message delivery.
+                Custom dispatchers can implement filtering, transformation,
+                or prioritisation using the metadata stored with each subscriber.
 
         Example:
             ```python
@@ -136,13 +180,12 @@ class PubSub:
             # publisher_queue doesn't receive this message
             ```
         """
-        pending: list[tuple[Topic, set[Subscriber]]] = []
+        pending: list[tuple[Topic, dict[Peer, dict]]] = []
         async with self._lock:
             for topic in topics:
-                subscribers = self._topics.get(topic, set())
-                if peers := subscribers.difference({publisher}):
-                    pending.append((topic, peers))
+                subscribers = self._topics.get(topic)
+                if subscribers:
+                    pending.append((topic, subscribers.copy()))
 
-        for topic, peers in pending:
-            for peer in peers:
-                try_put_message(peer, topic, message)
+        for topic, subscribers in pending:
+            dispatcher(topic, message, subscribers, publisher)
