@@ -10,12 +10,15 @@ type Registry = dict[Topic, Subscribers]
 type Dispatcher = Callable[[Topic, Message, Subscribers, Optional[Peer]], None]
 
 
-def default_dispatcher(
+def synchronous_dispatcher(
     topic: Topic,
     message: Message,
     subscribers: Subscribers,
     publisher: Optional[Peer] = None,
 ):
+    """
+    Blocks the caller until all put attempts are made.
+    """
     def try_put_message(peer: asyncio.Queue, topic: str, message: Message):
         try:
             peer.put_nowait((topic, message))
@@ -31,6 +34,25 @@ def default_dispatcher(
         for peer in subscribers.keys():
             try_put_message(peer, topic, message)
 
+def concurrent_dispatcher(
+    topic: Topic,
+    message: Message,
+    subscribers: Subscribers,
+    publisher: Optional[Peer] = None,
+):
+    """
+    Spawns one background put attempt task per subscriber.
+    """
+    async def try_put_message(peer: asyncio.Queue, topic: str, message: Message):
+        try:
+            peer.put_nowait((topic, message))
+        except (asyncio.QueueFull, asyncio.QueueShutDown):
+            pass
+    
+    for peer in subscribers.keys():
+        if publisher and peer is publisher:
+            continue
+        asyncio.create_task(try_put_message(peer, topic, message))
 
 class PubSub:
     """
@@ -108,7 +130,7 @@ class PubSub:
         self,
         message: Message,
         *topics: str,
-        dispatcher: Dispatcher = default_dispatcher,
+        dispatcher: Dispatcher = synchronous_dispatcher,
     ):
         """
         Broadcast a message to all subscribers of the specified topics.
@@ -149,7 +171,7 @@ class PubSub:
         publisher: Peer,
         message: Message,
         *topics: str,
-        dispatcher: Dispatcher = default_dispatcher,
+        dispatcher: Dispatcher = synchronous_dispatcher,
     ):
         """
         Broadcast a message to all subscribers except the publisher itself.

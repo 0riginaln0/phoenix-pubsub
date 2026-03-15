@@ -13,7 +13,7 @@ A topic-based publish‑subscribe system for `asyncio` applications, inspired by
 - Subscribe to one or more topics
 - Broadcast messages to all subscribers of a topic
 - Broadcast messages while excluding the publisher itself
-- Subscribers metadata & Custom dispatchers – attach metadata to subscriptions and implement your own delivery logic (filtering, fast‑laning, etc.) by passing a dispatcher function `broadcast` / `broadcast_from`
+- Subscribers metadata & Custom dispatchers – attach metadata to subscriptions and implement your own delivery logic by passing a dispatcher function `broadcast` / `broadcast_from`
 
 ## Installation
 
@@ -177,7 +177,11 @@ async def main():
 asyncio.run(main())
 ```
 
-### Custom dispatcher
+### Metadata & Custom dispatcher
+
+The library provides two dispatchers: `synchronous_dispatcher`, `concurrent_dispatcher`. The default one is synchronous.
+
+You can create and pass your own dispatcher like that:
 
 ```python
 import asyncio
