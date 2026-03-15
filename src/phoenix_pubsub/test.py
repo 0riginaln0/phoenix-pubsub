@@ -1,15 +1,16 @@
 import asyncio
 from phoenix_pubsub import PubSub
 
+
 async def test_pubsub():
     pubsub = PubSub()
 
     # Create subscriber queues
     queue_alerts = asyncio.Queue()
     queue_news = asyncio.Queue()
-    queue_all = asyncio.Queue()          # listens to multiple topics
+    queue_all = asyncio.Queue()  # listens to multiple topics
     queue_publisher = asyncio.Queue()
-    queue_slow = asyncio.Queue(maxsize=1) # will demonstrate dropped messages
+    queue_slow = asyncio.Queue(maxsize=1)  # will demonstrate dropped messages
 
     # Subscribe to topics
     await pubsub.subscribe(queue_alerts, "alerts")
@@ -75,10 +76,12 @@ async def test_pubsub():
     # queue_news should NOT receive anything
     try:
         await asyncio.wait_for(queue_news.get(), timeout=0.1)
-        assert False, "queue_news should not have received the message after unsubscribe"
+        assert False, (
+            "queue_news should not have received the message after unsubscribe"
+        )
     except asyncio.TimeoutError:
         pass  # Correct
-    
+
     # queue_all still receives because it's still subscribed
     topic, msg = await queue_all.get()
     assert topic == "news"
@@ -108,6 +111,7 @@ async def test_pubsub():
         pass  # Expected
 
     print("All tests passed!")
+
 
 if __name__ == "__main__":
     asyncio.run(test_pubsub())

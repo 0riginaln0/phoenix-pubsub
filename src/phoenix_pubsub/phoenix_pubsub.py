@@ -1,10 +1,18 @@
 import asyncio
 from collections import defaultdict
-from typing import Any, Dict, Set
+from typing import Any
 
 Topic = str
 Subscriber = asyncio.Queue
-Registry = Dict[Topic, Set[Subscriber]]
+Registry = dict[Topic, set[Subscriber]]
+
+
+def try_put_message(subscriber: asyncio.Queue, topic: str, message: Any):
+    try:
+        subscriber.put_nowait((topic, message))
+    except (asyncio.QueueFull, asyncio.QueueShutDown):
+        # Handle slow consumers – you might want to drop or log
+        pass
 
 
 class PubSub:
@@ -62,8 +70,7 @@ class PubSub:
         """
         async with self._lock:
             for topic in topics:
-                subscribers = self._topics.get(topic)
-                if subscribers is not None:
+                if subscribers := self._topics.get(topic):
                     subscribers.discard(subscriber)
                     if not subscribers:
                         del self._topics[topic]
@@ -91,16 +98,15 @@ class PubSub:
             - Slow consumers may miss messages if their queue is full
             - The broadcast is asynchronous - it doesn't wait for subscribers to process messages
         """
-        topic_subscribers = []
+        pending: list[tuple[Topic, set[Subscriber]]] = []
         async with self._lock:
             for topic in topics:
-                subscribers = list(self._topics.get(topic, set()))
-                if subscribers:
-                    topic_subscribers.append((topic, subscribers))
+                if subscribers := self._topics.get(topic, set()).copy():
+                    pending.append((topic, subscribers))
 
-        for topic, subscribers in topic_subscribers:
+        for topic, subscribers in pending:
             for subscriber in subscribers:
-                self._try_put_message(subscriber, topic, message)
+                try_put_message(subscriber, topic, message)
 
     async def broadcast_from(
         self, publisher: asyncio.Queue, message: Any, *topics: str
@@ -130,22 +136,13 @@ class PubSub:
             # publisher_queue doesn't receive this message
             ```
         """
-        topic_subscribers = []
+        pending: list[tuple[Topic, set[Subscriber]]] = []
         async with self._lock:
             for topic in topics:
-                subscribers = [
-                    s for s in self._topics.get(topic, set()) if s is not publisher
-                ]
-                if subscribers:
-                    topic_subscribers.append((topic, subscribers))
+                subscribers = self._topics.get(topic, set())
+                if peers := subscribers.difference({publisher}):
+                    pending.append((topic, peers))
 
-        for topic, subscribers in topic_subscribers:
-            for subscriber in subscribers:
-                self._try_put_message(subscriber, topic, message)
-
-    def _try_put_message(self, subscriber: asyncio.Queue, topic: str, message: Any):
-        try:
-            subscriber.put_nowait((topic, message))
-        except (asyncio.QueueFull, asyncio.QueueShutDown):
-            # Handle slow consumers – you might want to drop or log
-            pass
+        for topic, peers in pending:
+            for peer in peers:
+                try_put_message(peer, topic, message)
