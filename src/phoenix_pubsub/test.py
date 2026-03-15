@@ -134,19 +134,17 @@ async def test_pubsub():
 
         category = message["category"]
 
-        peers = []
-        for peer, metadata in subscribers.items():
-            interests = metadata.get("interests", [])
-            if category in interests:
-                peers.append(peer)
-
         if publisher:  # broadcast_from
-            for peer in peers:
-                if peer != publisher:
-                    try_put_message(peer, topic, message)
+            for peer, metadata in subscribers.items():
+                interests = metadata.get("interests", [])
+                if category in interests:
+                    if peer != publisher:
+                        try_put_message(peer, topic, message)
         else:  # broadcast
-            for peer in peers:
-                try_put_message(peer, topic, message)
+            for peer, metadata in subscribers.items():
+                interests = metadata.get("interests", [])
+                if category in interests:
+                    try_put_message(peer, topic, message)
 
     queue1 = asyncio.Queue()
     await pubsub.subscribe(
