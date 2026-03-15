@@ -29,4 +29,5 @@ git commit -m "new version"
 git tag v0.6.0
 git push origin v0.6.0
 git push
+uv publish
 ```
