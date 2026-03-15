@@ -6,4 +6,4 @@ For the usage examples check out [test.py](https://github.com/0riginaln0/phoenix
 
 from .phoenix_pubsub import PubSub, Topic, Message, Dispatcher, Subscribers, Peer
 
-__all__ = [PubSub, Topic, Message, Dispatcher, Subscribers, Peer]
+__all__ = ["PubSub", "Topic", "Message", "Dispatcher", "Subscribers", "Peer"]

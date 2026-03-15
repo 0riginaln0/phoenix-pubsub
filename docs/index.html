@@ -47,19 +47,19 @@
 
             </li>
             <li>
-                    <a class="variable" href="#str">str</a>
+                    <a class="variable" href="#Topic">Topic</a>
             </li>
             <li>
-                    <a class="variable" href="#Any">Any</a>
+                    <a class="variable" href="#Message">Message</a>
             </li>
             <li>
-                    <a class="variable" href="#Callable">Callable</a>
+                    <a class="variable" href="#Dispatcher">Dispatcher</a>
             </li>
             <li>
-                    <a class="variable" href="#dict">dict</a>
+                    <a class="variable" href="#Subscribers">Subscribers</a>
             </li>
             <li>
-                    <a class="variable" href="#Queue">Queue</a>
+                    <a class="variable" href="#Peer">Peer</a>
             </li>
     </ul>
 
@@ -94,7 +94,7 @@ phoenix_pubsub    </h1>
 </span><span id="L-6"><a href="#L-6"><span class="linenos">6</span></a>
 </span><span id="L-7"><a href="#L-7"><span class="linenos">7</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.phoenix_pubsub</span><span class="w"> </span><span class="kn">import</span> <span class="n">PubSub</span><span class="p">,</span> <span class="n">Topic</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">Dispatcher</span><span class="p">,</span> <span class="n">Subscribers</span><span class="p">,</span> <span class="n">Peer</span>
 </span><span id="L-8"><a href="#L-8"><span class="linenos">8</span></a>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">9</span></a><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="n">PubSub</span><span class="p">,</span> <span class="n">Topic</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">Dispatcher</span><span class="p">,</span> <span class="n">Subscribers</span><span class="p">,</span> <span class="n">Peer</span><span class="p">]</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">9</span></a><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PubSub&quot;</span><span class="p">,</span> <span class="s2">&quot;Topic&quot;</span><span class="p">,</span> <span class="s2">&quot;Message&quot;</span><span class="p">,</span> <span class="s2">&quot;Dispatcher&quot;</span><span class="p">,</span> <span class="s2">&quot;Subscribers&quot;</span><span class="p">,</span> <span class="s2">&quot;Peer&quot;</span><span class="p">]</span>
 </span></pre></div>
 
 
@@ -110,162 +110,162 @@ phoenix_pubsub    </h1>
 
     </div>
     <a class="headerlink" href="#PubSub"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PubSub-38"><a href="#PubSub-38"><span class="linenos"> 38</span></a><span class="k">class</span><span class="w"> </span><span class="nc">PubSub</span><span class="p">:</span>
-</span><span id="PubSub-39"><a href="#PubSub-39"><span class="linenos"> 39</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PubSub-40"><a href="#PubSub-40"><span class="linenos"> 40</span></a><span class="sd">    A topic-based publish-subscribe system for asynchronous message passing.</span>
-</span><span id="PubSub-41"><a href="#PubSub-41"><span class="linenos"> 41</span></a>
-</span><span id="PubSub-42"><a href="#PubSub-42"><span class="linenos"> 42</span></a><span class="sd">    Supports attaching arbitrary metadata to subscriptions, allowing custom</span>
-</span><span id="PubSub-43"><a href="#PubSub-43"><span class="linenos"> 43</span></a><span class="sd">    dispatcher logic for flexible message routing.</span>
-</span><span id="PubSub-44"><a href="#PubSub-44"><span class="linenos"> 44</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="PubSub-45"><a href="#PubSub-45"><span class="linenos"> 45</span></a>
-</span><span id="PubSub-46"><a href="#PubSub-46"><span class="linenos"> 46</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="PubSub-47"><a href="#PubSub-47"><span class="linenos"> 47</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="p">:</span> <span class="n">Registry</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-</span><span id="PubSub-48"><a href="#PubSub-48"><span class="linenos"> 48</span></a>        <span class="s2">&quot;Dictionary mapping topics to sets of subscriber queues&quot;</span>
-</span><span id="PubSub-49"><a href="#PubSub-49"><span class="linenos"> 49</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
-</span><span id="PubSub-50"><a href="#PubSub-50"><span class="linenos"> 50</span></a>        <span class="s2">&quot;Lock for thread-safe operations on the registry&quot;</span>
-</span><span id="PubSub-51"><a href="#PubSub-51"><span class="linenos"> 51</span></a>
-</span><span id="PubSub-52"><a href="#PubSub-52"><span class="linenos"> 52</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span>
-</span><span id="PubSub-53"><a href="#PubSub-53"><span class="linenos"> 53</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">peer</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">,</span> <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="PubSub-54"><a href="#PubSub-54"><span class="linenos"> 54</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="PubSub-55"><a href="#PubSub-55"><span class="linenos"> 55</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PubSub-56"><a href="#PubSub-56"><span class="linenos"> 56</span></a><span class="sd">        Subscribe a queue to one or more topics.</span>
-</span><span id="PubSub-57"><a href="#PubSub-57"><span class="linenos"> 57</span></a>
-</span><span id="PubSub-58"><a href="#PubSub-58"><span class="linenos"> 58</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub-59"><a href="#PubSub-59"><span class="linenos"> 59</span></a><span class="sd">            subscriber (asyncio.Queue): The queue that will receive messages.</span>
-</span><span id="PubSub-60"><a href="#PubSub-60"><span class="linenos"> 60</span></a><span class="sd">                This queue will receive messages as (topic, message) tuples.</span>
-</span><span id="PubSub-61"><a href="#PubSub-61"><span class="linenos"> 61</span></a><span class="sd">            *topics (str): Variable number of topic strings to subscribe to.</span>
-</span><span id="PubSub-62"><a href="#PubSub-62"><span class="linenos"> 62</span></a><span class="sd">                The subscriber will receive messages published to any of these topics.</span>
-</span><span id="PubSub-63"><a href="#PubSub-63"><span class="linenos"> 63</span></a><span class="sd">            metadata (Optional[dict]): Arbitrary data attached to this subscription.</span>
-</span><span id="PubSub-64"><a href="#PubSub-64"><span class="linenos"> 64</span></a><span class="sd">                The dispatcher can use it for custom delivery logic (e.g., filtering,</span>
-</span><span id="PubSub-65"><a href="#PubSub-65"><span class="linenos"> 65</span></a><span class="sd">                prioritisation).</span>
-</span><span id="PubSub-66"><a href="#PubSub-66"><span class="linenos"> 66</span></a>
-</span><span id="PubSub-67"><a href="#PubSub-67"><span class="linenos"> 67</span></a><span class="sd">        Example:</span>
-</span><span id="PubSub-68"><a href="#PubSub-68"><span class="linenos"> 68</span></a><span class="sd">            ```python</span>
-</span><span id="PubSub-69"><a href="#PubSub-69"><span class="linenos"> 69</span></a><span class="sd">            queue = asyncio.Queue()</span>
-</span><span id="PubSub-70"><a href="#PubSub-70"><span class="linenos"> 70</span></a>
-</span><span id="PubSub-71"><a href="#PubSub-71"><span class="linenos"> 71</span></a><span class="sd">            # Subscribe to single topic</span>
-</span><span id="PubSub-72"><a href="#PubSub-72"><span class="linenos"> 72</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;temperature&quot;)</span>
-</span><span id="PubSub-73"><a href="#PubSub-73"><span class="linenos"> 73</span></a>
-</span><span id="PubSub-74"><a href="#PubSub-74"><span class="linenos"> 74</span></a><span class="sd">            # Subscribe to multiple topics</span>
-</span><span id="PubSub-75"><a href="#PubSub-75"><span class="linenos"> 75</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;news&quot;, &quot;weather&quot;, &quot;sports&quot;)</span>
-</span><span id="PubSub-76"><a href="#PubSub-76"><span class="linenos"> 76</span></a>
-</span><span id="PubSub-77"><a href="#PubSub-77"><span class="linenos"> 77</span></a><span class="sd">            # Provide metadata</span>
-</span><span id="PubSub-78"><a href="#PubSub-78"><span class="linenos"> 78</span></a><span class="sd">            await pubsub.subscribe(quque, &quot;stock&quot;, metadata={&quot;priority&quot;: 10})</span>
-</span><span id="PubSub-79"><a href="#PubSub-79"><span class="linenos"> 79</span></a><span class="sd">            ```</span>
-</span><span id="PubSub-80"><a href="#PubSub-80"><span class="linenos"> 80</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PubSub-81"><a href="#PubSub-81"><span class="linenos"> 81</span></a>        <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span> <span class="ow">or</span> <span class="p">{}</span>
-</span><span id="PubSub-82"><a href="#PubSub-82"><span class="linenos"> 82</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
-</span><span id="PubSub-83"><a href="#PubSub-83"><span class="linenos"> 83</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
-</span><span id="PubSub-84"><a href="#PubSub-84"><span class="linenos"> 84</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="p">[</span><span class="n">topic</span><span class="p">][</span><span class="n">peer</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span>
-</span><span id="PubSub-85"><a href="#PubSub-85"><span class="linenos"> 85</span></a>
-</span><span id="PubSub-86"><a href="#PubSub-86"><span class="linenos"> 86</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">,</span> <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span id="PubSub-87"><a href="#PubSub-87"><span class="linenos"> 87</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PubSub-88"><a href="#PubSub-88"><span class="linenos"> 88</span></a><span class="sd">        Unsubscribe a queue from one or more topics.</span>
-</span><span id="PubSub-89"><a href="#PubSub-89"><span class="linenos"> 89</span></a>
-</span><span id="PubSub-90"><a href="#PubSub-90"><span class="linenos"> 90</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub-91"><a href="#PubSub-91"><span class="linenos"> 91</span></a><span class="sd">            subscriber (asyncio.Queue): The queue to unsubscribe.</span>
-</span><span id="PubSub-92"><a href="#PubSub-92"><span class="linenos"> 92</span></a><span class="sd">            *topics (str): Topics to unsubscribe from.</span>
-</span><span id="PubSub-93"><a href="#PubSub-93"><span class="linenos"> 93</span></a>
-</span><span id="PubSub-94"><a href="#PubSub-94"><span class="linenos"> 94</span></a><span class="sd">        Example:</span>
-</span><span id="PubSub-95"><a href="#PubSub-95"><span class="linenos"> 95</span></a><span class="sd">            ```python</span>
-</span><span id="PubSub-96"><a href="#PubSub-96"><span class="linenos"> 96</span></a><span class="sd">            # Unsubscribe from a single topic</span>
-</span><span id="PubSub-97"><a href="#PubSub-97"><span class="linenos"> 97</span></a><span class="sd">            await pubsub.unsubscribe(queue, &quot;weather&quot;)</span>
-</span><span id="PubSub-98"><a href="#PubSub-98"><span class="linenos"> 98</span></a>
-</span><span id="PubSub-99"><a href="#PubSub-99"><span class="linenos"> 99</span></a><span class="sd">            # Unsubscribe from multiple topics</span>
-</span><span id="PubSub-100"><a href="#PubSub-100"><span class="linenos">100</span></a><span class="sd">            await pubsub.unsubscribe(queue, &quot;news&quot;, &quot;sports&quot;)</span>
-</span><span id="PubSub-101"><a href="#PubSub-101"><span class="linenos">101</span></a><span class="sd">            ```</span>
-</span><span id="PubSub-102"><a href="#PubSub-102"><span class="linenos">102</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PubSub-103"><a href="#PubSub-103"><span class="linenos">103</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
-</span><span id="PubSub-104"><a href="#PubSub-104"><span class="linenos">104</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
-</span><span id="PubSub-105"><a href="#PubSub-105"><span class="linenos">105</span></a>                <span class="k">if</span> <span class="n">subscribers</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">):</span>
-</span><span id="PubSub-106"><a href="#PubSub-106"><span class="linenos">106</span></a>                    <span class="n">subscribers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">peer</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-</span><span id="PubSub-107"><a href="#PubSub-107"><span class="linenos">107</span></a>                    <span class="k">if</span> <span class="ow">not</span> <span class="n">subscribers</span><span class="p">:</span>
-</span><span id="PubSub-108"><a href="#PubSub-108"><span class="linenos">108</span></a>                        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="p">[</span><span class="n">topic</span><span class="p">]</span>
-</span><span id="PubSub-109"><a href="#PubSub-109"><span class="linenos">109</span></a>
-</span><span id="PubSub-110"><a href="#PubSub-110"><span class="linenos">110</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">broadcast</span><span class="p">(</span>
-</span><span id="PubSub-111"><a href="#PubSub-111"><span class="linenos">111</span></a>        <span class="bp">self</span><span class="p">,</span>
-</span><span id="PubSub-112"><a href="#PubSub-112"><span class="linenos">112</span></a>        <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span>
-</span><span id="PubSub-113"><a href="#PubSub-113"><span class="linenos">113</span></a>        <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="PubSub-114"><a href="#PubSub-114"><span class="linenos">114</span></a>        <span class="n">dispatcher</span><span class="p">:</span> <span class="n">Dispatcher</span> <span class="o">=</span> <span class="n">default_dispatcher</span><span class="p">,</span>
-</span><span id="PubSub-115"><a href="#PubSub-115"><span class="linenos">115</span></a>    <span class="p">):</span>
-</span><span id="PubSub-116"><a href="#PubSub-116"><span class="linenos">116</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PubSub-117"><a href="#PubSub-117"><span class="linenos">117</span></a><span class="sd">        Broadcast a message to all subscribers of the specified topics.</span>
-</span><span id="PubSub-118"><a href="#PubSub-118"><span class="linenos">118</span></a>
-</span><span id="PubSub-119"><a href="#PubSub-119"><span class="linenos">119</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub-120"><a href="#PubSub-120"><span class="linenos">120</span></a><span class="sd">            message (Any): The message to broadcast.</span>
-</span><span id="PubSub-121"><a href="#PubSub-121"><span class="linenos">121</span></a><span class="sd">            *topics (str): Topics to broadcast to.</span>
-</span><span id="PubSub-122"><a href="#PubSub-122"><span class="linenos">122</span></a><span class="sd">            dispatcher (Dispatcher): A callable that handles the actual message delivery.</span>
-</span><span id="PubSub-123"><a href="#PubSub-123"><span class="linenos">123</span></a><span class="sd">                Custom dispatchers can implement filtering, transformation,</span>
-</span><span id="PubSub-124"><a href="#PubSub-124"><span class="linenos">124</span></a><span class="sd">                or prioritisation using the metadata stored with each subscriber.</span>
-</span><span id="PubSub-125"><a href="#PubSub-125"><span class="linenos">125</span></a>
-</span><span id="PubSub-126"><a href="#PubSub-126"><span class="linenos">126</span></a><span class="sd">        Example:</span>
-</span><span id="PubSub-127"><a href="#PubSub-127"><span class="linenos">127</span></a><span class="sd">            ```python</span>
-</span><span id="PubSub-128"><a href="#PubSub-128"><span class="linenos">128</span></a><span class="sd">            await pubsub.broadcast(&quot;Hello world!&quot;, &quot;greetings&quot;)</span>
-</span><span id="PubSub-129"><a href="#PubSub-129"><span class="linenos">129</span></a><span class="sd">            # Subscribers receive: (&quot;greetings&quot;, &quot;Hello world!&quot;)</span>
-</span><span id="PubSub-130"><a href="#PubSub-130"><span class="linenos">130</span></a>
-</span><span id="PubSub-131"><a href="#PubSub-131"><span class="linenos">131</span></a><span class="sd">            data = {&quot;sensor&quot;: &quot;temperature&quot;, &quot;value&quot;: 23.5, &quot;unit&quot;: &quot;celsius&quot;}</span>
-</span><span id="PubSub-132"><a href="#PubSub-132"><span class="linenos">132</span></a><span class="sd">            await pubsub.broadcast(data, &quot;telemetry&quot;, &quot;monitoring&quot;)</span>
-</span><span id="PubSub-133"><a href="#PubSub-133"><span class="linenos">133</span></a><span class="sd">            # Subscribers receive: (&quot;telemetry&quot;, data)</span>
-</span><span id="PubSub-134"><a href="#PubSub-134"><span class="linenos">134</span></a><span class="sd">            #                      (&quot;monitoring&quot;, data)</span>
-</span><span id="PubSub-135"><a href="#PubSub-135"><span class="linenos">135</span></a><span class="sd">            ```</span>
-</span><span id="PubSub-136"><a href="#PubSub-136"><span class="linenos">136</span></a>
-</span><span id="PubSub-137"><a href="#PubSub-137"><span class="linenos">137</span></a><span class="sd">        Note:</span>
-</span><span id="PubSub-138"><a href="#PubSub-138"><span class="linenos">138</span></a><span class="sd">            - Slow consumers may miss messages if their queue is full</span>
-</span><span id="PubSub-139"><a href="#PubSub-139"><span class="linenos">139</span></a><span class="sd">            - The broadcast is asynchronous - it doesn&#39;t wait for subscribers to process messages</span>
-</span><span id="PubSub-140"><a href="#PubSub-140"><span class="linenos">140</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PubSub-141"><a href="#PubSub-141"><span class="linenos">141</span></a>        <span class="n">pending</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Topic</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Peer</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="PubSub-142"><a href="#PubSub-142"><span class="linenos">142</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
-</span><span id="PubSub-143"><a href="#PubSub-143"><span class="linenos">143</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
-</span><span id="PubSub-144"><a href="#PubSub-144"><span class="linenos">144</span></a>                <span class="k">if</span> <span class="n">subscribers</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">):</span>
-</span><span id="PubSub-145"><a href="#PubSub-145"><span class="linenos">145</span></a>                    <span class="n">pending</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
-</span><span id="PubSub-146"><a href="#PubSub-146"><span class="linenos">146</span></a>
-</span><span id="PubSub-147"><a href="#PubSub-147"><span class="linenos">147</span></a>        <span class="k">for</span> <span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
-</span><span id="PubSub-148"><a href="#PubSub-148"><span class="linenos">148</span></a>            <span class="n">dispatcher</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">subscribers</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-</span><span id="PubSub-149"><a href="#PubSub-149"><span class="linenos">149</span></a>
-</span><span id="PubSub-150"><a href="#PubSub-150"><span class="linenos">150</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">broadcast_from</span><span class="p">(</span>
-</span><span id="PubSub-151"><a href="#PubSub-151"><span class="linenos">151</span></a>        <span class="bp">self</span><span class="p">,</span>
-</span><span id="PubSub-152"><a href="#PubSub-152"><span class="linenos">152</span></a>        <span class="n">publisher</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">,</span>
-</span><span id="PubSub-153"><a href="#PubSub-153"><span class="linenos">153</span></a>        <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span>
-</span><span id="PubSub-154"><a href="#PubSub-154"><span class="linenos">154</span></a>        <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="PubSub-155"><a href="#PubSub-155"><span class="linenos">155</span></a>        <span class="n">dispatcher</span><span class="p">:</span> <span class="n">Dispatcher</span> <span class="o">=</span> <span class="n">default_dispatcher</span><span class="p">,</span>
-</span><span id="PubSub-156"><a href="#PubSub-156"><span class="linenos">156</span></a>    <span class="p">):</span>
-</span><span id="PubSub-157"><a href="#PubSub-157"><span class="linenos">157</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PubSub-158"><a href="#PubSub-158"><span class="linenos">158</span></a><span class="sd">        Broadcast a message to all subscribers except the publisher itself.</span>
-</span><span id="PubSub-159"><a href="#PubSub-159"><span class="linenos">159</span></a>
-</span><span id="PubSub-160"><a href="#PubSub-160"><span class="linenos">160</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub-161"><a href="#PubSub-161"><span class="linenos">161</span></a><span class="sd">            publisher (asyncio.Queue): The queue of the publisher to exclude.</span>
-</span><span id="PubSub-162"><a href="#PubSub-162"><span class="linenos">162</span></a><span class="sd">                This subscriber will not receive the message.</span>
-</span><span id="PubSub-163"><a href="#PubSub-163"><span class="linenos">163</span></a><span class="sd">            message (Any): The message to broadcast.</span>
-</span><span id="PubSub-164"><a href="#PubSub-164"><span class="linenos">164</span></a><span class="sd">            *topics (str): Topics to broadcast to.</span>
-</span><span id="PubSub-165"><a href="#PubSub-165"><span class="linenos">165</span></a><span class="sd">            dispatcher (Dispatcher): A callable that handles the actual message delivery.</span>
-</span><span id="PubSub-166"><a href="#PubSub-166"><span class="linenos">166</span></a><span class="sd">                Custom dispatchers can implement filtering, transformation,</span>
-</span><span id="PubSub-167"><a href="#PubSub-167"><span class="linenos">167</span></a><span class="sd">                or prioritisation using the metadata stored with each subscriber.</span>
-</span><span id="PubSub-168"><a href="#PubSub-168"><span class="linenos">168</span></a>
-</span><span id="PubSub-169"><a href="#PubSub-169"><span class="linenos">169</span></a><span class="sd">        Example:</span>
-</span><span id="PubSub-170"><a href="#PubSub-170"><span class="linenos">170</span></a><span class="sd">            ```python</span>
-</span><span id="PubSub-171"><a href="#PubSub-171"><span class="linenos">171</span></a><span class="sd">            publisher_queue = asyncio.Queue()</span>
-</span><span id="PubSub-172"><a href="#PubSub-172"><span class="linenos">172</span></a><span class="sd">            chat_queue = asyncio.Queue()</span>
-</span><span id="PubSub-173"><a href="#PubSub-173"><span class="linenos">173</span></a><span class="sd">            await pubsub.subscribe(publisher_queue, &quot;chat&quot;)</span>
-</span><span id="PubSub-174"><a href="#PubSub-174"><span class="linenos">174</span></a><span class="sd">            await pubsub.subscribe(chat, &quot;chat&quot;)</span>
-</span><span id="PubSub-175"><a href="#PubSub-175"><span class="linenos">175</span></a>
-</span><span id="PubSub-176"><a href="#PubSub-176"><span class="linenos">176</span></a><span class="sd">            await pubsub.broadcast_from(</span>
-</span><span id="PubSub-177"><a href="#PubSub-177"><span class="linenos">177</span></a><span class="sd">                publisher_queue,</span>
-</span><span id="PubSub-178"><a href="#PubSub-178"><span class="linenos">178</span></a><span class="sd">                &quot;User joined the channel&quot;,</span>
-</span><span id="PubSub-179"><a href="#PubSub-179"><span class="linenos">179</span></a><span class="sd">                &quot;chat&quot;</span>
-</span><span id="PubSub-180"><a href="#PubSub-180"><span class="linenos">180</span></a><span class="sd">            )</span>
-</span><span id="PubSub-181"><a href="#PubSub-181"><span class="linenos">181</span></a><span class="sd">            # chat_queue receives (&quot;chat&quot;, &quot;User joined the channel&quot;)</span>
-</span><span id="PubSub-182"><a href="#PubSub-182"><span class="linenos">182</span></a><span class="sd">            # publisher_queue doesn&#39;t receive this message</span>
-</span><span id="PubSub-183"><a href="#PubSub-183"><span class="linenos">183</span></a><span class="sd">            ```</span>
-</span><span id="PubSub-184"><a href="#PubSub-184"><span class="linenos">184</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PubSub-185"><a href="#PubSub-185"><span class="linenos">185</span></a>        <span class="n">pending</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Topic</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Peer</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="PubSub-186"><a href="#PubSub-186"><span class="linenos">186</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
-</span><span id="PubSub-187"><a href="#PubSub-187"><span class="linenos">187</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
-</span><span id="PubSub-188"><a href="#PubSub-188"><span class="linenos">188</span></a>                <span class="n">subscribers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">)</span>
-</span><span id="PubSub-189"><a href="#PubSub-189"><span class="linenos">189</span></a>                <span class="k">if</span> <span class="n">subscribers</span><span class="p">:</span>
-</span><span id="PubSub-190"><a href="#PubSub-190"><span class="linenos">190</span></a>                    <span class="n">pending</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
-</span><span id="PubSub-191"><a href="#PubSub-191"><span class="linenos">191</span></a>
-</span><span id="PubSub-192"><a href="#PubSub-192"><span class="linenos">192</span></a>        <span class="k">for</span> <span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
-</span><span id="PubSub-193"><a href="#PubSub-193"><span class="linenos">193</span></a>            <span class="n">dispatcher</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">subscribers</span><span class="p">,</span> <span class="n">publisher</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PubSub-37"><a href="#PubSub-37"><span class="linenos"> 37</span></a><span class="k">class</span><span class="w"> </span><span class="nc">PubSub</span><span class="p">:</span>
+</span><span id="PubSub-38"><a href="#PubSub-38"><span class="linenos"> 38</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PubSub-39"><a href="#PubSub-39"><span class="linenos"> 39</span></a><span class="sd">    A topic-based publish-subscribe system for asynchronous message passing.</span>
+</span><span id="PubSub-40"><a href="#PubSub-40"><span class="linenos"> 40</span></a>
+</span><span id="PubSub-41"><a href="#PubSub-41"><span class="linenos"> 41</span></a><span class="sd">    Supports attaching arbitrary metadata to subscriptions, allowing custom</span>
+</span><span id="PubSub-42"><a href="#PubSub-42"><span class="linenos"> 42</span></a><span class="sd">    dispatcher logic for flexible message routing.</span>
+</span><span id="PubSub-43"><a href="#PubSub-43"><span class="linenos"> 43</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="PubSub-44"><a href="#PubSub-44"><span class="linenos"> 44</span></a>
+</span><span id="PubSub-45"><a href="#PubSub-45"><span class="linenos"> 45</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="PubSub-46"><a href="#PubSub-46"><span class="linenos"> 46</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="p">:</span> <span class="n">Registry</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+</span><span id="PubSub-47"><a href="#PubSub-47"><span class="linenos"> 47</span></a>        <span class="s2">&quot;Dictionary mapping topics to sets of subscriber queues&quot;</span>
+</span><span id="PubSub-48"><a href="#PubSub-48"><span class="linenos"> 48</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+</span><span id="PubSub-49"><a href="#PubSub-49"><span class="linenos"> 49</span></a>        <span class="s2">&quot;Lock for thread-safe operations on the registry&quot;</span>
+</span><span id="PubSub-50"><a href="#PubSub-50"><span class="linenos"> 50</span></a>
+</span><span id="PubSub-51"><a href="#PubSub-51"><span class="linenos"> 51</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span>
+</span><span id="PubSub-52"><a href="#PubSub-52"><span class="linenos"> 52</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">peer</span><span class="p">:</span> <span class="n">Peer</span><span class="p">,</span> <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="PubSub-53"><a href="#PubSub-53"><span class="linenos"> 53</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="PubSub-54"><a href="#PubSub-54"><span class="linenos"> 54</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PubSub-55"><a href="#PubSub-55"><span class="linenos"> 55</span></a><span class="sd">        Subscribe a queue to one or more topics.</span>
+</span><span id="PubSub-56"><a href="#PubSub-56"><span class="linenos"> 56</span></a>
+</span><span id="PubSub-57"><a href="#PubSub-57"><span class="linenos"> 57</span></a><span class="sd">        Args:</span>
+</span><span id="PubSub-58"><a href="#PubSub-58"><span class="linenos"> 58</span></a><span class="sd">            subscriber: The queue that will receive messages.</span>
+</span><span id="PubSub-59"><a href="#PubSub-59"><span class="linenos"> 59</span></a><span class="sd">                This queue will receive messages as (topic, message) tuples.</span>
+</span><span id="PubSub-60"><a href="#PubSub-60"><span class="linenos"> 60</span></a><span class="sd">            *topics: Variable number of topic strings to subscribe to.</span>
+</span><span id="PubSub-61"><a href="#PubSub-61"><span class="linenos"> 61</span></a><span class="sd">                The subscriber will receive messages published to any of these topics.</span>
+</span><span id="PubSub-62"><a href="#PubSub-62"><span class="linenos"> 62</span></a><span class="sd">            metadata: Arbitrary data attached to this subscription.</span>
+</span><span id="PubSub-63"><a href="#PubSub-63"><span class="linenos"> 63</span></a><span class="sd">                The dispatcher can use it for custom delivery logic (e.g., filtering,</span>
+</span><span id="PubSub-64"><a href="#PubSub-64"><span class="linenos"> 64</span></a><span class="sd">                prioritisation).</span>
+</span><span id="PubSub-65"><a href="#PubSub-65"><span class="linenos"> 65</span></a>
+</span><span id="PubSub-66"><a href="#PubSub-66"><span class="linenos"> 66</span></a><span class="sd">        Example:</span>
+</span><span id="PubSub-67"><a href="#PubSub-67"><span class="linenos"> 67</span></a><span class="sd">            ```python</span>
+</span><span id="PubSub-68"><a href="#PubSub-68"><span class="linenos"> 68</span></a><span class="sd">            queue = asyncio.Queue()</span>
+</span><span id="PubSub-69"><a href="#PubSub-69"><span class="linenos"> 69</span></a>
+</span><span id="PubSub-70"><a href="#PubSub-70"><span class="linenos"> 70</span></a><span class="sd">            # Subscribe to single topic</span>
+</span><span id="PubSub-71"><a href="#PubSub-71"><span class="linenos"> 71</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;temperature&quot;)</span>
+</span><span id="PubSub-72"><a href="#PubSub-72"><span class="linenos"> 72</span></a>
+</span><span id="PubSub-73"><a href="#PubSub-73"><span class="linenos"> 73</span></a><span class="sd">            # Subscribe to multiple topics</span>
+</span><span id="PubSub-74"><a href="#PubSub-74"><span class="linenos"> 74</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;news&quot;, &quot;weather&quot;, &quot;sports&quot;)</span>
+</span><span id="PubSub-75"><a href="#PubSub-75"><span class="linenos"> 75</span></a>
+</span><span id="PubSub-76"><a href="#PubSub-76"><span class="linenos"> 76</span></a><span class="sd">            # Provide metadata</span>
+</span><span id="PubSub-77"><a href="#PubSub-77"><span class="linenos"> 77</span></a><span class="sd">            await pubsub.subscribe(quque, &quot;stock&quot;, metadata={&quot;priority&quot;: 10})</span>
+</span><span id="PubSub-78"><a href="#PubSub-78"><span class="linenos"> 78</span></a><span class="sd">            ```</span>
+</span><span id="PubSub-79"><a href="#PubSub-79"><span class="linenos"> 79</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PubSub-80"><a href="#PubSub-80"><span class="linenos"> 80</span></a>        <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span> <span class="ow">or</span> <span class="p">{}</span>
+</span><span id="PubSub-81"><a href="#PubSub-81"><span class="linenos"> 81</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+</span><span id="PubSub-82"><a href="#PubSub-82"><span class="linenos"> 82</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
+</span><span id="PubSub-83"><a href="#PubSub-83"><span class="linenos"> 83</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="p">[</span><span class="n">topic</span><span class="p">][</span><span class="n">peer</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span>
+</span><span id="PubSub-84"><a href="#PubSub-84"><span class="linenos"> 84</span></a>
+</span><span id="PubSub-85"><a href="#PubSub-85"><span class="linenos"> 85</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer</span><span class="p">:</span> <span class="n">Peer</span><span class="p">,</span> <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+</span><span id="PubSub-86"><a href="#PubSub-86"><span class="linenos"> 86</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PubSub-87"><a href="#PubSub-87"><span class="linenos"> 87</span></a><span class="sd">        Unsubscribe a queue from one or more topics.</span>
+</span><span id="PubSub-88"><a href="#PubSub-88"><span class="linenos"> 88</span></a>
+</span><span id="PubSub-89"><a href="#PubSub-89"><span class="linenos"> 89</span></a><span class="sd">        Args:</span>
+</span><span id="PubSub-90"><a href="#PubSub-90"><span class="linenos"> 90</span></a><span class="sd">            subscriber: The queue to unsubscribe.</span>
+</span><span id="PubSub-91"><a href="#PubSub-91"><span class="linenos"> 91</span></a><span class="sd">            *topics: Topics to unsubscribe from.</span>
+</span><span id="PubSub-92"><a href="#PubSub-92"><span class="linenos"> 92</span></a>
+</span><span id="PubSub-93"><a href="#PubSub-93"><span class="linenos"> 93</span></a><span class="sd">        Example:</span>
+</span><span id="PubSub-94"><a href="#PubSub-94"><span class="linenos"> 94</span></a><span class="sd">            ```python</span>
+</span><span id="PubSub-95"><a href="#PubSub-95"><span class="linenos"> 95</span></a><span class="sd">            # Unsubscribe from a single topic</span>
+</span><span id="PubSub-96"><a href="#PubSub-96"><span class="linenos"> 96</span></a><span class="sd">            await pubsub.unsubscribe(queue, &quot;weather&quot;)</span>
+</span><span id="PubSub-97"><a href="#PubSub-97"><span class="linenos"> 97</span></a>
+</span><span id="PubSub-98"><a href="#PubSub-98"><span class="linenos"> 98</span></a><span class="sd">            # Unsubscribe from multiple topics</span>
+</span><span id="PubSub-99"><a href="#PubSub-99"><span class="linenos"> 99</span></a><span class="sd">            await pubsub.unsubscribe(queue, &quot;news&quot;, &quot;sports&quot;)</span>
+</span><span id="PubSub-100"><a href="#PubSub-100"><span class="linenos">100</span></a><span class="sd">            ```</span>
+</span><span id="PubSub-101"><a href="#PubSub-101"><span class="linenos">101</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PubSub-102"><a href="#PubSub-102"><span class="linenos">102</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+</span><span id="PubSub-103"><a href="#PubSub-103"><span class="linenos">103</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
+</span><span id="PubSub-104"><a href="#PubSub-104"><span class="linenos">104</span></a>                <span class="k">if</span> <span class="n">subscribers</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">):</span>
+</span><span id="PubSub-105"><a href="#PubSub-105"><span class="linenos">105</span></a>                    <span class="n">subscribers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">peer</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="PubSub-106"><a href="#PubSub-106"><span class="linenos">106</span></a>                    <span class="k">if</span> <span class="ow">not</span> <span class="n">subscribers</span><span class="p">:</span>
+</span><span id="PubSub-107"><a href="#PubSub-107"><span class="linenos">107</span></a>                        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="p">[</span><span class="n">topic</span><span class="p">]</span>
+</span><span id="PubSub-108"><a href="#PubSub-108"><span class="linenos">108</span></a>
+</span><span id="PubSub-109"><a href="#PubSub-109"><span class="linenos">109</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">broadcast</span><span class="p">(</span>
+</span><span id="PubSub-110"><a href="#PubSub-110"><span class="linenos">110</span></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="PubSub-111"><a href="#PubSub-111"><span class="linenos">111</span></a>        <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span>
+</span><span id="PubSub-112"><a href="#PubSub-112"><span class="linenos">112</span></a>        <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="PubSub-113"><a href="#PubSub-113"><span class="linenos">113</span></a>        <span class="n">dispatcher</span><span class="p">:</span> <span class="n">Dispatcher</span> <span class="o">=</span> <span class="n">default_dispatcher</span><span class="p">,</span>
+</span><span id="PubSub-114"><a href="#PubSub-114"><span class="linenos">114</span></a>    <span class="p">):</span>
+</span><span id="PubSub-115"><a href="#PubSub-115"><span class="linenos">115</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PubSub-116"><a href="#PubSub-116"><span class="linenos">116</span></a><span class="sd">        Broadcast a message to all subscribers of the specified topics.</span>
+</span><span id="PubSub-117"><a href="#PubSub-117"><span class="linenos">117</span></a>
+</span><span id="PubSub-118"><a href="#PubSub-118"><span class="linenos">118</span></a><span class="sd">        Args:</span>
+</span><span id="PubSub-119"><a href="#PubSub-119"><span class="linenos">119</span></a><span class="sd">            message: The message to broadcast.</span>
+</span><span id="PubSub-120"><a href="#PubSub-120"><span class="linenos">120</span></a><span class="sd">            *topics: Topics to broadcast to.</span>
+</span><span id="PubSub-121"><a href="#PubSub-121"><span class="linenos">121</span></a><span class="sd">            dispatcher: A callable that handles the actual message delivery.</span>
+</span><span id="PubSub-122"><a href="#PubSub-122"><span class="linenos">122</span></a><span class="sd">                Custom dispatchers can implement filtering, transformation,</span>
+</span><span id="PubSub-123"><a href="#PubSub-123"><span class="linenos">123</span></a><span class="sd">                or prioritisation using the metadata stored with each subscriber.</span>
+</span><span id="PubSub-124"><a href="#PubSub-124"><span class="linenos">124</span></a>
+</span><span id="PubSub-125"><a href="#PubSub-125"><span class="linenos">125</span></a><span class="sd">        Example:</span>
+</span><span id="PubSub-126"><a href="#PubSub-126"><span class="linenos">126</span></a><span class="sd">            ```python</span>
+</span><span id="PubSub-127"><a href="#PubSub-127"><span class="linenos">127</span></a><span class="sd">            await pubsub.broadcast(&quot;Hello world!&quot;, &quot;greetings&quot;)</span>
+</span><span id="PubSub-128"><a href="#PubSub-128"><span class="linenos">128</span></a><span class="sd">            # Subscribers receive: (&quot;greetings&quot;, &quot;Hello world!&quot;)</span>
+</span><span id="PubSub-129"><a href="#PubSub-129"><span class="linenos">129</span></a>
+</span><span id="PubSub-130"><a href="#PubSub-130"><span class="linenos">130</span></a><span class="sd">            data = {&quot;sensor&quot;: &quot;temperature&quot;, &quot;value&quot;: 23.5, &quot;unit&quot;: &quot;celsius&quot;}</span>
+</span><span id="PubSub-131"><a href="#PubSub-131"><span class="linenos">131</span></a><span class="sd">            await pubsub.broadcast(data, &quot;telemetry&quot;, &quot;monitoring&quot;)</span>
+</span><span id="PubSub-132"><a href="#PubSub-132"><span class="linenos">132</span></a><span class="sd">            # Subscribers receive: (&quot;telemetry&quot;, data)</span>
+</span><span id="PubSub-133"><a href="#PubSub-133"><span class="linenos">133</span></a><span class="sd">            #                      (&quot;monitoring&quot;, data)</span>
+</span><span id="PubSub-134"><a href="#PubSub-134"><span class="linenos">134</span></a><span class="sd">            ```</span>
+</span><span id="PubSub-135"><a href="#PubSub-135"><span class="linenos">135</span></a>
+</span><span id="PubSub-136"><a href="#PubSub-136"><span class="linenos">136</span></a><span class="sd">        Note:</span>
+</span><span id="PubSub-137"><a href="#PubSub-137"><span class="linenos">137</span></a><span class="sd">            - Slow consumers may miss messages if their queue is full</span>
+</span><span id="PubSub-138"><a href="#PubSub-138"><span class="linenos">138</span></a><span class="sd">            - The broadcast is asynchronous - it doesn&#39;t wait for subscribers to process messages</span>
+</span><span id="PubSub-139"><a href="#PubSub-139"><span class="linenos">139</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PubSub-140"><a href="#PubSub-140"><span class="linenos">140</span></a>        <span class="n">pending</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Topic</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Peer</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="PubSub-141"><a href="#PubSub-141"><span class="linenos">141</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+</span><span id="PubSub-142"><a href="#PubSub-142"><span class="linenos">142</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
+</span><span id="PubSub-143"><a href="#PubSub-143"><span class="linenos">143</span></a>                <span class="k">if</span> <span class="n">subscribers</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">):</span>
+</span><span id="PubSub-144"><a href="#PubSub-144"><span class="linenos">144</span></a>                    <span class="n">pending</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
+</span><span id="PubSub-145"><a href="#PubSub-145"><span class="linenos">145</span></a>
+</span><span id="PubSub-146"><a href="#PubSub-146"><span class="linenos">146</span></a>        <span class="k">for</span> <span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
+</span><span id="PubSub-147"><a href="#PubSub-147"><span class="linenos">147</span></a>            <span class="n">dispatcher</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">subscribers</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="PubSub-148"><a href="#PubSub-148"><span class="linenos">148</span></a>
+</span><span id="PubSub-149"><a href="#PubSub-149"><span class="linenos">149</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">broadcast_from</span><span class="p">(</span>
+</span><span id="PubSub-150"><a href="#PubSub-150"><span class="linenos">150</span></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="PubSub-151"><a href="#PubSub-151"><span class="linenos">151</span></a>        <span class="n">publisher</span><span class="p">:</span> <span class="n">Peer</span><span class="p">,</span>
+</span><span id="PubSub-152"><a href="#PubSub-152"><span class="linenos">152</span></a>        <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span>
+</span><span id="PubSub-153"><a href="#PubSub-153"><span class="linenos">153</span></a>        <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="PubSub-154"><a href="#PubSub-154"><span class="linenos">154</span></a>        <span class="n">dispatcher</span><span class="p">:</span> <span class="n">Dispatcher</span> <span class="o">=</span> <span class="n">default_dispatcher</span><span class="p">,</span>
+</span><span id="PubSub-155"><a href="#PubSub-155"><span class="linenos">155</span></a>    <span class="p">):</span>
+</span><span id="PubSub-156"><a href="#PubSub-156"><span class="linenos">156</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PubSub-157"><a href="#PubSub-157"><span class="linenos">157</span></a><span class="sd">        Broadcast a message to all subscribers except the publisher itself.</span>
+</span><span id="PubSub-158"><a href="#PubSub-158"><span class="linenos">158</span></a>
+</span><span id="PubSub-159"><a href="#PubSub-159"><span class="linenos">159</span></a><span class="sd">        Args:</span>
+</span><span id="PubSub-160"><a href="#PubSub-160"><span class="linenos">160</span></a><span class="sd">            publisher: The queue of the publisher to exclude.</span>
+</span><span id="PubSub-161"><a href="#PubSub-161"><span class="linenos">161</span></a><span class="sd">                This subscriber will not receive the message.</span>
+</span><span id="PubSub-162"><a href="#PubSub-162"><span class="linenos">162</span></a><span class="sd">            message: The message to broadcast.</span>
+</span><span id="PubSub-163"><a href="#PubSub-163"><span class="linenos">163</span></a><span class="sd">            *topics: Topics to broadcast to.</span>
+</span><span id="PubSub-164"><a href="#PubSub-164"><span class="linenos">164</span></a><span class="sd">            dispatcher: A callable that handles the actual message delivery.</span>
+</span><span id="PubSub-165"><a href="#PubSub-165"><span class="linenos">165</span></a><span class="sd">                Custom dispatchers can implement filtering, transformation,</span>
+</span><span id="PubSub-166"><a href="#PubSub-166"><span class="linenos">166</span></a><span class="sd">                or prioritisation using the metadata stored with each subscriber.</span>
+</span><span id="PubSub-167"><a href="#PubSub-167"><span class="linenos">167</span></a>
+</span><span id="PubSub-168"><a href="#PubSub-168"><span class="linenos">168</span></a><span class="sd">        Example:</span>
+</span><span id="PubSub-169"><a href="#PubSub-169"><span class="linenos">169</span></a><span class="sd">            ```python</span>
+</span><span id="PubSub-170"><a href="#PubSub-170"><span class="linenos">170</span></a><span class="sd">            publisher_queue = asyncio.Queue()</span>
+</span><span id="PubSub-171"><a href="#PubSub-171"><span class="linenos">171</span></a><span class="sd">            chat_queue = asyncio.Queue()</span>
+</span><span id="PubSub-172"><a href="#PubSub-172"><span class="linenos">172</span></a><span class="sd">            await pubsub.subscribe(publisher_queue, &quot;chat&quot;)</span>
+</span><span id="PubSub-173"><a href="#PubSub-173"><span class="linenos">173</span></a><span class="sd">            await pubsub.subscribe(chat, &quot;chat&quot;)</span>
+</span><span id="PubSub-174"><a href="#PubSub-174"><span class="linenos">174</span></a>
+</span><span id="PubSub-175"><a href="#PubSub-175"><span class="linenos">175</span></a><span class="sd">            await pubsub.broadcast_from(</span>
+</span><span id="PubSub-176"><a href="#PubSub-176"><span class="linenos">176</span></a><span class="sd">                publisher_queue,</span>
+</span><span id="PubSub-177"><a href="#PubSub-177"><span class="linenos">177</span></a><span class="sd">                &quot;User joined the channel&quot;,</span>
+</span><span id="PubSub-178"><a href="#PubSub-178"><span class="linenos">178</span></a><span class="sd">                &quot;chat&quot;</span>
+</span><span id="PubSub-179"><a href="#PubSub-179"><span class="linenos">179</span></a><span class="sd">            )</span>
+</span><span id="PubSub-180"><a href="#PubSub-180"><span class="linenos">180</span></a><span class="sd">            # chat_queue receives (&quot;chat&quot;, &quot;User joined the channel&quot;)</span>
+</span><span id="PubSub-181"><a href="#PubSub-181"><span class="linenos">181</span></a><span class="sd">            # publisher_queue doesn&#39;t receive this message</span>
+</span><span id="PubSub-182"><a href="#PubSub-182"><span class="linenos">182</span></a><span class="sd">            ```</span>
+</span><span id="PubSub-183"><a href="#PubSub-183"><span class="linenos">183</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PubSub-184"><a href="#PubSub-184"><span class="linenos">184</span></a>        <span class="n">pending</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Topic</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Peer</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="PubSub-185"><a href="#PubSub-185"><span class="linenos">185</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+</span><span id="PubSub-186"><a href="#PubSub-186"><span class="linenos">186</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
+</span><span id="PubSub-187"><a href="#PubSub-187"><span class="linenos">187</span></a>                <span class="n">subscribers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">)</span>
+</span><span id="PubSub-188"><a href="#PubSub-188"><span class="linenos">188</span></a>                <span class="k">if</span> <span class="n">subscribers</span><span class="p">:</span>
+</span><span id="PubSub-189"><a href="#PubSub-189"><span class="linenos">189</span></a>                    <span class="n">pending</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
+</span><span id="PubSub-190"><a href="#PubSub-190"><span class="linenos">190</span></a>
+</span><span id="PubSub-191"><a href="#PubSub-191"><span class="linenos">191</span></a>        <span class="k">for</span> <span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
+</span><span id="PubSub-192"><a href="#PubSub-192"><span class="linenos">192</span></a>            <span class="n">dispatcher</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">subscribers</span><span class="p">,</span> <span class="n">publisher</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -281,45 +281,45 @@ dispatcher logic for flexible message routing.</p>
 <div class="attr function">
             
         <span class="def">async def</span>
-        <span class="name">subscribe</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">peer</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">queues</span><span class="o">.</span><span class="n">Queue</span>,</span><span class="param">	<span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+        <span class="name">subscribe</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">peer</span><span class="p">:</span> <span class="n">Peer</span>, </span><span class="param"><span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span>, </span><span class="param"><span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
                 <label class="view-source-button" for="PubSub.subscribe-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#PubSub.subscribe"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PubSub.subscribe-52"><a href="#PubSub.subscribe-52"><span class="linenos">52</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span>
-</span><span id="PubSub.subscribe-53"><a href="#PubSub.subscribe-53"><span class="linenos">53</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">peer</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">,</span> <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="PubSub.subscribe-54"><a href="#PubSub.subscribe-54"><span class="linenos">54</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="PubSub.subscribe-55"><a href="#PubSub.subscribe-55"><span class="linenos">55</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PubSub.subscribe-56"><a href="#PubSub.subscribe-56"><span class="linenos">56</span></a><span class="sd">        Subscribe a queue to one or more topics.</span>
-</span><span id="PubSub.subscribe-57"><a href="#PubSub.subscribe-57"><span class="linenos">57</span></a>
-</span><span id="PubSub.subscribe-58"><a href="#PubSub.subscribe-58"><span class="linenos">58</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub.subscribe-59"><a href="#PubSub.subscribe-59"><span class="linenos">59</span></a><span class="sd">            subscriber (asyncio.Queue): The queue that will receive messages.</span>
-</span><span id="PubSub.subscribe-60"><a href="#PubSub.subscribe-60"><span class="linenos">60</span></a><span class="sd">                This queue will receive messages as (topic, message) tuples.</span>
-</span><span id="PubSub.subscribe-61"><a href="#PubSub.subscribe-61"><span class="linenos">61</span></a><span class="sd">            *topics (str): Variable number of topic strings to subscribe to.</span>
-</span><span id="PubSub.subscribe-62"><a href="#PubSub.subscribe-62"><span class="linenos">62</span></a><span class="sd">                The subscriber will receive messages published to any of these topics.</span>
-</span><span id="PubSub.subscribe-63"><a href="#PubSub.subscribe-63"><span class="linenos">63</span></a><span class="sd">            metadata (Optional[dict]): Arbitrary data attached to this subscription.</span>
-</span><span id="PubSub.subscribe-64"><a href="#PubSub.subscribe-64"><span class="linenos">64</span></a><span class="sd">                The dispatcher can use it for custom delivery logic (e.g., filtering,</span>
-</span><span id="PubSub.subscribe-65"><a href="#PubSub.subscribe-65"><span class="linenos">65</span></a><span class="sd">                prioritisation).</span>
-</span><span id="PubSub.subscribe-66"><a href="#PubSub.subscribe-66"><span class="linenos">66</span></a>
-</span><span id="PubSub.subscribe-67"><a href="#PubSub.subscribe-67"><span class="linenos">67</span></a><span class="sd">        Example:</span>
-</span><span id="PubSub.subscribe-68"><a href="#PubSub.subscribe-68"><span class="linenos">68</span></a><span class="sd">            ```python</span>
-</span><span id="PubSub.subscribe-69"><a href="#PubSub.subscribe-69"><span class="linenos">69</span></a><span class="sd">            queue = asyncio.Queue()</span>
-</span><span id="PubSub.subscribe-70"><a href="#PubSub.subscribe-70"><span class="linenos">70</span></a>
-</span><span id="PubSub.subscribe-71"><a href="#PubSub.subscribe-71"><span class="linenos">71</span></a><span class="sd">            # Subscribe to single topic</span>
-</span><span id="PubSub.subscribe-72"><a href="#PubSub.subscribe-72"><span class="linenos">72</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;temperature&quot;)</span>
-</span><span id="PubSub.subscribe-73"><a href="#PubSub.subscribe-73"><span class="linenos">73</span></a>
-</span><span id="PubSub.subscribe-74"><a href="#PubSub.subscribe-74"><span class="linenos">74</span></a><span class="sd">            # Subscribe to multiple topics</span>
-</span><span id="PubSub.subscribe-75"><a href="#PubSub.subscribe-75"><span class="linenos">75</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;news&quot;, &quot;weather&quot;, &quot;sports&quot;)</span>
-</span><span id="PubSub.subscribe-76"><a href="#PubSub.subscribe-76"><span class="linenos">76</span></a>
-</span><span id="PubSub.subscribe-77"><a href="#PubSub.subscribe-77"><span class="linenos">77</span></a><span class="sd">            # Provide metadata</span>
-</span><span id="PubSub.subscribe-78"><a href="#PubSub.subscribe-78"><span class="linenos">78</span></a><span class="sd">            await pubsub.subscribe(quque, &quot;stock&quot;, metadata={&quot;priority&quot;: 10})</span>
-</span><span id="PubSub.subscribe-79"><a href="#PubSub.subscribe-79"><span class="linenos">79</span></a><span class="sd">            ```</span>
-</span><span id="PubSub.subscribe-80"><a href="#PubSub.subscribe-80"><span class="linenos">80</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PubSub.subscribe-81"><a href="#PubSub.subscribe-81"><span class="linenos">81</span></a>        <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span> <span class="ow">or</span> <span class="p">{}</span>
-</span><span id="PubSub.subscribe-82"><a href="#PubSub.subscribe-82"><span class="linenos">82</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
-</span><span id="PubSub.subscribe-83"><a href="#PubSub.subscribe-83"><span class="linenos">83</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
-</span><span id="PubSub.subscribe-84"><a href="#PubSub.subscribe-84"><span class="linenos">84</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="p">[</span><span class="n">topic</span><span class="p">][</span><span class="n">peer</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PubSub.subscribe-51"><a href="#PubSub.subscribe-51"><span class="linenos">51</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span>
+</span><span id="PubSub.subscribe-52"><a href="#PubSub.subscribe-52"><span class="linenos">52</span></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">peer</span><span class="p">:</span> <span class="n">Peer</span><span class="p">,</span> <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="PubSub.subscribe-53"><a href="#PubSub.subscribe-53"><span class="linenos">53</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="PubSub.subscribe-54"><a href="#PubSub.subscribe-54"><span class="linenos">54</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PubSub.subscribe-55"><a href="#PubSub.subscribe-55"><span class="linenos">55</span></a><span class="sd">        Subscribe a queue to one or more topics.</span>
+</span><span id="PubSub.subscribe-56"><a href="#PubSub.subscribe-56"><span class="linenos">56</span></a>
+</span><span id="PubSub.subscribe-57"><a href="#PubSub.subscribe-57"><span class="linenos">57</span></a><span class="sd">        Args:</span>
+</span><span id="PubSub.subscribe-58"><a href="#PubSub.subscribe-58"><span class="linenos">58</span></a><span class="sd">            subscriber: The queue that will receive messages.</span>
+</span><span id="PubSub.subscribe-59"><a href="#PubSub.subscribe-59"><span class="linenos">59</span></a><span class="sd">                This queue will receive messages as (topic, message) tuples.</span>
+</span><span id="PubSub.subscribe-60"><a href="#PubSub.subscribe-60"><span class="linenos">60</span></a><span class="sd">            *topics: Variable number of topic strings to subscribe to.</span>
+</span><span id="PubSub.subscribe-61"><a href="#PubSub.subscribe-61"><span class="linenos">61</span></a><span class="sd">                The subscriber will receive messages published to any of these topics.</span>
+</span><span id="PubSub.subscribe-62"><a href="#PubSub.subscribe-62"><span class="linenos">62</span></a><span class="sd">            metadata: Arbitrary data attached to this subscription.</span>
+</span><span id="PubSub.subscribe-63"><a href="#PubSub.subscribe-63"><span class="linenos">63</span></a><span class="sd">                The dispatcher can use it for custom delivery logic (e.g., filtering,</span>
+</span><span id="PubSub.subscribe-64"><a href="#PubSub.subscribe-64"><span class="linenos">64</span></a><span class="sd">                prioritisation).</span>
+</span><span id="PubSub.subscribe-65"><a href="#PubSub.subscribe-65"><span class="linenos">65</span></a>
+</span><span id="PubSub.subscribe-66"><a href="#PubSub.subscribe-66"><span class="linenos">66</span></a><span class="sd">        Example:</span>
+</span><span id="PubSub.subscribe-67"><a href="#PubSub.subscribe-67"><span class="linenos">67</span></a><span class="sd">            ```python</span>
+</span><span id="PubSub.subscribe-68"><a href="#PubSub.subscribe-68"><span class="linenos">68</span></a><span class="sd">            queue = asyncio.Queue()</span>
+</span><span id="PubSub.subscribe-69"><a href="#PubSub.subscribe-69"><span class="linenos">69</span></a>
+</span><span id="PubSub.subscribe-70"><a href="#PubSub.subscribe-70"><span class="linenos">70</span></a><span class="sd">            # Subscribe to single topic</span>
+</span><span id="PubSub.subscribe-71"><a href="#PubSub.subscribe-71"><span class="linenos">71</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;temperature&quot;)</span>
+</span><span id="PubSub.subscribe-72"><a href="#PubSub.subscribe-72"><span class="linenos">72</span></a>
+</span><span id="PubSub.subscribe-73"><a href="#PubSub.subscribe-73"><span class="linenos">73</span></a><span class="sd">            # Subscribe to multiple topics</span>
+</span><span id="PubSub.subscribe-74"><a href="#PubSub.subscribe-74"><span class="linenos">74</span></a><span class="sd">            await pubsub.subscribe(queue, &quot;news&quot;, &quot;weather&quot;, &quot;sports&quot;)</span>
+</span><span id="PubSub.subscribe-75"><a href="#PubSub.subscribe-75"><span class="linenos">75</span></a>
+</span><span id="PubSub.subscribe-76"><a href="#PubSub.subscribe-76"><span class="linenos">76</span></a><span class="sd">            # Provide metadata</span>
+</span><span id="PubSub.subscribe-77"><a href="#PubSub.subscribe-77"><span class="linenos">77</span></a><span class="sd">            await pubsub.subscribe(quque, &quot;stock&quot;, metadata={&quot;priority&quot;: 10})</span>
+</span><span id="PubSub.subscribe-78"><a href="#PubSub.subscribe-78"><span class="linenos">78</span></a><span class="sd">            ```</span>
+</span><span id="PubSub.subscribe-79"><a href="#PubSub.subscribe-79"><span class="linenos">79</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PubSub.subscribe-80"><a href="#PubSub.subscribe-80"><span class="linenos">80</span></a>        <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span> <span class="ow">or</span> <span class="p">{}</span>
+</span><span id="PubSub.subscribe-81"><a href="#PubSub.subscribe-81"><span class="linenos">81</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+</span><span id="PubSub.subscribe-82"><a href="#PubSub.subscribe-82"><span class="linenos">82</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
+</span><span id="PubSub.subscribe-83"><a href="#PubSub.subscribe-83"><span class="linenos">83</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="p">[</span><span class="n">topic</span><span class="p">][</span><span class="n">peer</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span>
 </span></pre></div>
 
 
@@ -328,11 +328,11 @@ dispatcher logic for flexible message routing.</p>
 <h6 id="arguments">Arguments:</h6>
 
 <ul>
-<li><strong>subscriber (asyncio.Queue):</strong>  The queue that will receive messages.
+<li><strong>subscriber:</strong>  The queue that will receive messages.
 This queue will receive messages as (topic, message) tuples.</li>
-<li>*<strong>topics (str):</strong>  Variable number of topic strings to subscribe to.
+<li>*<strong>topics:</strong>  Variable number of topic strings to subscribe to.
 The subscriber will receive messages published to any of these topics.</li>
-<li><strong>metadata (Optional[dict]):</strong>  Arbitrary data attached to this subscription.
+<li><strong>metadata:</strong>  Arbitrary data attached to this subscription.
 The dispatcher can use it for custom delivery logic (e.g., filtering,
 prioritisation).</li>
 </ul>
@@ -363,35 +363,35 @@ prioritisation).</li>
 <div class="attr function">
             
         <span class="def">async def</span>
-        <span class="name">unsubscribe</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">peer</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">queues</span><span class="o">.</span><span class="n">Queue</span>, </span><span class="param"><span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">):</span></span>
+        <span class="name">unsubscribe</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">peer</span><span class="p">:</span> <span class="n">Peer</span>, </span><span class="param"><span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="PubSub.unsubscribe-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#PubSub.unsubscribe"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PubSub.unsubscribe-86"><a href="#PubSub.unsubscribe-86"><span class="linenos"> 86</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">,</span> <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span id="PubSub.unsubscribe-87"><a href="#PubSub.unsubscribe-87"><span class="linenos"> 87</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PubSub.unsubscribe-88"><a href="#PubSub.unsubscribe-88"><span class="linenos"> 88</span></a><span class="sd">        Unsubscribe a queue from one or more topics.</span>
-</span><span id="PubSub.unsubscribe-89"><a href="#PubSub.unsubscribe-89"><span class="linenos"> 89</span></a>
-</span><span id="PubSub.unsubscribe-90"><a href="#PubSub.unsubscribe-90"><span class="linenos"> 90</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub.unsubscribe-91"><a href="#PubSub.unsubscribe-91"><span class="linenos"> 91</span></a><span class="sd">            subscriber (asyncio.Queue): The queue to unsubscribe.</span>
-</span><span id="PubSub.unsubscribe-92"><a href="#PubSub.unsubscribe-92"><span class="linenos"> 92</span></a><span class="sd">            *topics (str): Topics to unsubscribe from.</span>
-</span><span id="PubSub.unsubscribe-93"><a href="#PubSub.unsubscribe-93"><span class="linenos"> 93</span></a>
-</span><span id="PubSub.unsubscribe-94"><a href="#PubSub.unsubscribe-94"><span class="linenos"> 94</span></a><span class="sd">        Example:</span>
-</span><span id="PubSub.unsubscribe-95"><a href="#PubSub.unsubscribe-95"><span class="linenos"> 95</span></a><span class="sd">            ```python</span>
-</span><span id="PubSub.unsubscribe-96"><a href="#PubSub.unsubscribe-96"><span class="linenos"> 96</span></a><span class="sd">            # Unsubscribe from a single topic</span>
-</span><span id="PubSub.unsubscribe-97"><a href="#PubSub.unsubscribe-97"><span class="linenos"> 97</span></a><span class="sd">            await pubsub.unsubscribe(queue, &quot;weather&quot;)</span>
-</span><span id="PubSub.unsubscribe-98"><a href="#PubSub.unsubscribe-98"><span class="linenos"> 98</span></a>
-</span><span id="PubSub.unsubscribe-99"><a href="#PubSub.unsubscribe-99"><span class="linenos"> 99</span></a><span class="sd">            # Unsubscribe from multiple topics</span>
-</span><span id="PubSub.unsubscribe-100"><a href="#PubSub.unsubscribe-100"><span class="linenos">100</span></a><span class="sd">            await pubsub.unsubscribe(queue, &quot;news&quot;, &quot;sports&quot;)</span>
-</span><span id="PubSub.unsubscribe-101"><a href="#PubSub.unsubscribe-101"><span class="linenos">101</span></a><span class="sd">            ```</span>
-</span><span id="PubSub.unsubscribe-102"><a href="#PubSub.unsubscribe-102"><span class="linenos">102</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PubSub.unsubscribe-103"><a href="#PubSub.unsubscribe-103"><span class="linenos">103</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
-</span><span id="PubSub.unsubscribe-104"><a href="#PubSub.unsubscribe-104"><span class="linenos">104</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
-</span><span id="PubSub.unsubscribe-105"><a href="#PubSub.unsubscribe-105"><span class="linenos">105</span></a>                <span class="k">if</span> <span class="n">subscribers</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">):</span>
-</span><span id="PubSub.unsubscribe-106"><a href="#PubSub.unsubscribe-106"><span class="linenos">106</span></a>                    <span class="n">subscribers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">peer</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-</span><span id="PubSub.unsubscribe-107"><a href="#PubSub.unsubscribe-107"><span class="linenos">107</span></a>                    <span class="k">if</span> <span class="ow">not</span> <span class="n">subscribers</span><span class="p">:</span>
-</span><span id="PubSub.unsubscribe-108"><a href="#PubSub.unsubscribe-108"><span class="linenos">108</span></a>                        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="p">[</span><span class="n">topic</span><span class="p">]</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PubSub.unsubscribe-85"><a href="#PubSub.unsubscribe-85"><span class="linenos"> 85</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer</span><span class="p">:</span> <span class="n">Peer</span><span class="p">,</span> <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+</span><span id="PubSub.unsubscribe-86"><a href="#PubSub.unsubscribe-86"><span class="linenos"> 86</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PubSub.unsubscribe-87"><a href="#PubSub.unsubscribe-87"><span class="linenos"> 87</span></a><span class="sd">        Unsubscribe a queue from one or more topics.</span>
+</span><span id="PubSub.unsubscribe-88"><a href="#PubSub.unsubscribe-88"><span class="linenos"> 88</span></a>
+</span><span id="PubSub.unsubscribe-89"><a href="#PubSub.unsubscribe-89"><span class="linenos"> 89</span></a><span class="sd">        Args:</span>
+</span><span id="PubSub.unsubscribe-90"><a href="#PubSub.unsubscribe-90"><span class="linenos"> 90</span></a><span class="sd">            subscriber: The queue to unsubscribe.</span>
+</span><span id="PubSub.unsubscribe-91"><a href="#PubSub.unsubscribe-91"><span class="linenos"> 91</span></a><span class="sd">            *topics: Topics to unsubscribe from.</span>
+</span><span id="PubSub.unsubscribe-92"><a href="#PubSub.unsubscribe-92"><span class="linenos"> 92</span></a>
+</span><span id="PubSub.unsubscribe-93"><a href="#PubSub.unsubscribe-93"><span class="linenos"> 93</span></a><span class="sd">        Example:</span>
+</span><span id="PubSub.unsubscribe-94"><a href="#PubSub.unsubscribe-94"><span class="linenos"> 94</span></a><span class="sd">            ```python</span>
+</span><span id="PubSub.unsubscribe-95"><a href="#PubSub.unsubscribe-95"><span class="linenos"> 95</span></a><span class="sd">            # Unsubscribe from a single topic</span>
+</span><span id="PubSub.unsubscribe-96"><a href="#PubSub.unsubscribe-96"><span class="linenos"> 96</span></a><span class="sd">            await pubsub.unsubscribe(queue, &quot;weather&quot;)</span>
+</span><span id="PubSub.unsubscribe-97"><a href="#PubSub.unsubscribe-97"><span class="linenos"> 97</span></a>
+</span><span id="PubSub.unsubscribe-98"><a href="#PubSub.unsubscribe-98"><span class="linenos"> 98</span></a><span class="sd">            # Unsubscribe from multiple topics</span>
+</span><span id="PubSub.unsubscribe-99"><a href="#PubSub.unsubscribe-99"><span class="linenos"> 99</span></a><span class="sd">            await pubsub.unsubscribe(queue, &quot;news&quot;, &quot;sports&quot;)</span>
+</span><span id="PubSub.unsubscribe-100"><a href="#PubSub.unsubscribe-100"><span class="linenos">100</span></a><span class="sd">            ```</span>
+</span><span id="PubSub.unsubscribe-101"><a href="#PubSub.unsubscribe-101"><span class="linenos">101</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PubSub.unsubscribe-102"><a href="#PubSub.unsubscribe-102"><span class="linenos">102</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+</span><span id="PubSub.unsubscribe-103"><a href="#PubSub.unsubscribe-103"><span class="linenos">103</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
+</span><span id="PubSub.unsubscribe-104"><a href="#PubSub.unsubscribe-104"><span class="linenos">104</span></a>                <span class="k">if</span> <span class="n">subscribers</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">):</span>
+</span><span id="PubSub.unsubscribe-105"><a href="#PubSub.unsubscribe-105"><span class="linenos">105</span></a>                    <span class="n">subscribers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">peer</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="PubSub.unsubscribe-106"><a href="#PubSub.unsubscribe-106"><span class="linenos">106</span></a>                    <span class="k">if</span> <span class="ow">not</span> <span class="n">subscribers</span><span class="p">:</span>
+</span><span id="PubSub.unsubscribe-107"><a href="#PubSub.unsubscribe-107"><span class="linenos">107</span></a>                        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="p">[</span><span class="n">topic</span><span class="p">]</span>
 </span></pre></div>
 
 
@@ -400,8 +400,8 @@ prioritisation).</li>
 <h6 id="arguments">Arguments:</h6>
 
 <ul>
-<li><strong>subscriber (asyncio.Queue):</strong>  The queue to unsubscribe.</li>
-<li>*<strong>topics (str):</strong>  Topics to unsubscribe from.</li>
+<li><strong>subscriber:</strong>  The queue to unsubscribe.</li>
+<li>*<strong>topics:</strong>  Topics to unsubscribe from.</li>
 </ul>
 
 <h6 id="example">Example:</h6>
@@ -425,51 +425,51 @@ prioritisation).</li>
 <div class="attr function">
             
         <span class="def">async def</span>
-        <span class="name">broadcast</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">message</span><span class="p">:</span> <span class="n">Any</span>,</span><span class="param">	<span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">dispatcher</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">queues</span><span class="o">.</span><span class="n">Queue</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">queues</span><span class="o">.</span><span class="n">Queue</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">NoneType</span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">default_dispatcher</span><span class="o">&gt;</span></span><span class="return-annotation">):</span></span>
+        <span class="name">broadcast</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">message</span><span class="p">:</span> <span class="n">Message</span>,</span><span class="param">	<span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">dispatcher</span><span class="p">:</span> <span class="n">Dispatcher</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">default_dispatcher</span><span class="o">&gt;</span></span><span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="PubSub.broadcast-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#PubSub.broadcast"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PubSub.broadcast-110"><a href="#PubSub.broadcast-110"><span class="linenos">110</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">broadcast</span><span class="p">(</span>
-</span><span id="PubSub.broadcast-111"><a href="#PubSub.broadcast-111"><span class="linenos">111</span></a>        <span class="bp">self</span><span class="p">,</span>
-</span><span id="PubSub.broadcast-112"><a href="#PubSub.broadcast-112"><span class="linenos">112</span></a>        <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span>
-</span><span id="PubSub.broadcast-113"><a href="#PubSub.broadcast-113"><span class="linenos">113</span></a>        <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="PubSub.broadcast-114"><a href="#PubSub.broadcast-114"><span class="linenos">114</span></a>        <span class="n">dispatcher</span><span class="p">:</span> <span class="n">Dispatcher</span> <span class="o">=</span> <span class="n">default_dispatcher</span><span class="p">,</span>
-</span><span id="PubSub.broadcast-115"><a href="#PubSub.broadcast-115"><span class="linenos">115</span></a>    <span class="p">):</span>
-</span><span id="PubSub.broadcast-116"><a href="#PubSub.broadcast-116"><span class="linenos">116</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PubSub.broadcast-117"><a href="#PubSub.broadcast-117"><span class="linenos">117</span></a><span class="sd">        Broadcast a message to all subscribers of the specified topics.</span>
-</span><span id="PubSub.broadcast-118"><a href="#PubSub.broadcast-118"><span class="linenos">118</span></a>
-</span><span id="PubSub.broadcast-119"><a href="#PubSub.broadcast-119"><span class="linenos">119</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub.broadcast-120"><a href="#PubSub.broadcast-120"><span class="linenos">120</span></a><span class="sd">            message (Any): The message to broadcast.</span>
-</span><span id="PubSub.broadcast-121"><a href="#PubSub.broadcast-121"><span class="linenos">121</span></a><span class="sd">            *topics (str): Topics to broadcast to.</span>
-</span><span id="PubSub.broadcast-122"><a href="#PubSub.broadcast-122"><span class="linenos">122</span></a><span class="sd">            dispatcher (Dispatcher): A callable that handles the actual message delivery.</span>
-</span><span id="PubSub.broadcast-123"><a href="#PubSub.broadcast-123"><span class="linenos">123</span></a><span class="sd">                Custom dispatchers can implement filtering, transformation,</span>
-</span><span id="PubSub.broadcast-124"><a href="#PubSub.broadcast-124"><span class="linenos">124</span></a><span class="sd">                or prioritisation using the metadata stored with each subscriber.</span>
-</span><span id="PubSub.broadcast-125"><a href="#PubSub.broadcast-125"><span class="linenos">125</span></a>
-</span><span id="PubSub.broadcast-126"><a href="#PubSub.broadcast-126"><span class="linenos">126</span></a><span class="sd">        Example:</span>
-</span><span id="PubSub.broadcast-127"><a href="#PubSub.broadcast-127"><span class="linenos">127</span></a><span class="sd">            ```python</span>
-</span><span id="PubSub.broadcast-128"><a href="#PubSub.broadcast-128"><span class="linenos">128</span></a><span class="sd">            await pubsub.broadcast(&quot;Hello world!&quot;, &quot;greetings&quot;)</span>
-</span><span id="PubSub.broadcast-129"><a href="#PubSub.broadcast-129"><span class="linenos">129</span></a><span class="sd">            # Subscribers receive: (&quot;greetings&quot;, &quot;Hello world!&quot;)</span>
-</span><span id="PubSub.broadcast-130"><a href="#PubSub.broadcast-130"><span class="linenos">130</span></a>
-</span><span id="PubSub.broadcast-131"><a href="#PubSub.broadcast-131"><span class="linenos">131</span></a><span class="sd">            data = {&quot;sensor&quot;: &quot;temperature&quot;, &quot;value&quot;: 23.5, &quot;unit&quot;: &quot;celsius&quot;}</span>
-</span><span id="PubSub.broadcast-132"><a href="#PubSub.broadcast-132"><span class="linenos">132</span></a><span class="sd">            await pubsub.broadcast(data, &quot;telemetry&quot;, &quot;monitoring&quot;)</span>
-</span><span id="PubSub.broadcast-133"><a href="#PubSub.broadcast-133"><span class="linenos">133</span></a><span class="sd">            # Subscribers receive: (&quot;telemetry&quot;, data)</span>
-</span><span id="PubSub.broadcast-134"><a href="#PubSub.broadcast-134"><span class="linenos">134</span></a><span class="sd">            #                      (&quot;monitoring&quot;, data)</span>
-</span><span id="PubSub.broadcast-135"><a href="#PubSub.broadcast-135"><span class="linenos">135</span></a><span class="sd">            ```</span>
-</span><span id="PubSub.broadcast-136"><a href="#PubSub.broadcast-136"><span class="linenos">136</span></a>
-</span><span id="PubSub.broadcast-137"><a href="#PubSub.broadcast-137"><span class="linenos">137</span></a><span class="sd">        Note:</span>
-</span><span id="PubSub.broadcast-138"><a href="#PubSub.broadcast-138"><span class="linenos">138</span></a><span class="sd">            - Slow consumers may miss messages if their queue is full</span>
-</span><span id="PubSub.broadcast-139"><a href="#PubSub.broadcast-139"><span class="linenos">139</span></a><span class="sd">            - The broadcast is asynchronous - it doesn&#39;t wait for subscribers to process messages</span>
-</span><span id="PubSub.broadcast-140"><a href="#PubSub.broadcast-140"><span class="linenos">140</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PubSub.broadcast-141"><a href="#PubSub.broadcast-141"><span class="linenos">141</span></a>        <span class="n">pending</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Topic</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Peer</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="PubSub.broadcast-142"><a href="#PubSub.broadcast-142"><span class="linenos">142</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
-</span><span id="PubSub.broadcast-143"><a href="#PubSub.broadcast-143"><span class="linenos">143</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
-</span><span id="PubSub.broadcast-144"><a href="#PubSub.broadcast-144"><span class="linenos">144</span></a>                <span class="k">if</span> <span class="n">subscribers</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">):</span>
-</span><span id="PubSub.broadcast-145"><a href="#PubSub.broadcast-145"><span class="linenos">145</span></a>                    <span class="n">pending</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
-</span><span id="PubSub.broadcast-146"><a href="#PubSub.broadcast-146"><span class="linenos">146</span></a>
-</span><span id="PubSub.broadcast-147"><a href="#PubSub.broadcast-147"><span class="linenos">147</span></a>        <span class="k">for</span> <span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
-</span><span id="PubSub.broadcast-148"><a href="#PubSub.broadcast-148"><span class="linenos">148</span></a>            <span class="n">dispatcher</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">subscribers</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PubSub.broadcast-109"><a href="#PubSub.broadcast-109"><span class="linenos">109</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">broadcast</span><span class="p">(</span>
+</span><span id="PubSub.broadcast-110"><a href="#PubSub.broadcast-110"><span class="linenos">110</span></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="PubSub.broadcast-111"><a href="#PubSub.broadcast-111"><span class="linenos">111</span></a>        <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span>
+</span><span id="PubSub.broadcast-112"><a href="#PubSub.broadcast-112"><span class="linenos">112</span></a>        <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="PubSub.broadcast-113"><a href="#PubSub.broadcast-113"><span class="linenos">113</span></a>        <span class="n">dispatcher</span><span class="p">:</span> <span class="n">Dispatcher</span> <span class="o">=</span> <span class="n">default_dispatcher</span><span class="p">,</span>
+</span><span id="PubSub.broadcast-114"><a href="#PubSub.broadcast-114"><span class="linenos">114</span></a>    <span class="p">):</span>
+</span><span id="PubSub.broadcast-115"><a href="#PubSub.broadcast-115"><span class="linenos">115</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PubSub.broadcast-116"><a href="#PubSub.broadcast-116"><span class="linenos">116</span></a><span class="sd">        Broadcast a message to all subscribers of the specified topics.</span>
+</span><span id="PubSub.broadcast-117"><a href="#PubSub.broadcast-117"><span class="linenos">117</span></a>
+</span><span id="PubSub.broadcast-118"><a href="#PubSub.broadcast-118"><span class="linenos">118</span></a><span class="sd">        Args:</span>
+</span><span id="PubSub.broadcast-119"><a href="#PubSub.broadcast-119"><span class="linenos">119</span></a><span class="sd">            message: The message to broadcast.</span>
+</span><span id="PubSub.broadcast-120"><a href="#PubSub.broadcast-120"><span class="linenos">120</span></a><span class="sd">            *topics: Topics to broadcast to.</span>
+</span><span id="PubSub.broadcast-121"><a href="#PubSub.broadcast-121"><span class="linenos">121</span></a><span class="sd">            dispatcher: A callable that handles the actual message delivery.</span>
+</span><span id="PubSub.broadcast-122"><a href="#PubSub.broadcast-122"><span class="linenos">122</span></a><span class="sd">                Custom dispatchers can implement filtering, transformation,</span>
+</span><span id="PubSub.broadcast-123"><a href="#PubSub.broadcast-123"><span class="linenos">123</span></a><span class="sd">                or prioritisation using the metadata stored with each subscriber.</span>
+</span><span id="PubSub.broadcast-124"><a href="#PubSub.broadcast-124"><span class="linenos">124</span></a>
+</span><span id="PubSub.broadcast-125"><a href="#PubSub.broadcast-125"><span class="linenos">125</span></a><span class="sd">        Example:</span>
+</span><span id="PubSub.broadcast-126"><a href="#PubSub.broadcast-126"><span class="linenos">126</span></a><span class="sd">            ```python</span>
+</span><span id="PubSub.broadcast-127"><a href="#PubSub.broadcast-127"><span class="linenos">127</span></a><span class="sd">            await pubsub.broadcast(&quot;Hello world!&quot;, &quot;greetings&quot;)</span>
+</span><span id="PubSub.broadcast-128"><a href="#PubSub.broadcast-128"><span class="linenos">128</span></a><span class="sd">            # Subscribers receive: (&quot;greetings&quot;, &quot;Hello world!&quot;)</span>
+</span><span id="PubSub.broadcast-129"><a href="#PubSub.broadcast-129"><span class="linenos">129</span></a>
+</span><span id="PubSub.broadcast-130"><a href="#PubSub.broadcast-130"><span class="linenos">130</span></a><span class="sd">            data = {&quot;sensor&quot;: &quot;temperature&quot;, &quot;value&quot;: 23.5, &quot;unit&quot;: &quot;celsius&quot;}</span>
+</span><span id="PubSub.broadcast-131"><a href="#PubSub.broadcast-131"><span class="linenos">131</span></a><span class="sd">            await pubsub.broadcast(data, &quot;telemetry&quot;, &quot;monitoring&quot;)</span>
+</span><span id="PubSub.broadcast-132"><a href="#PubSub.broadcast-132"><span class="linenos">132</span></a><span class="sd">            # Subscribers receive: (&quot;telemetry&quot;, data)</span>
+</span><span id="PubSub.broadcast-133"><a href="#PubSub.broadcast-133"><span class="linenos">133</span></a><span class="sd">            #                      (&quot;monitoring&quot;, data)</span>
+</span><span id="PubSub.broadcast-134"><a href="#PubSub.broadcast-134"><span class="linenos">134</span></a><span class="sd">            ```</span>
+</span><span id="PubSub.broadcast-135"><a href="#PubSub.broadcast-135"><span class="linenos">135</span></a>
+</span><span id="PubSub.broadcast-136"><a href="#PubSub.broadcast-136"><span class="linenos">136</span></a><span class="sd">        Note:</span>
+</span><span id="PubSub.broadcast-137"><a href="#PubSub.broadcast-137"><span class="linenos">137</span></a><span class="sd">            - Slow consumers may miss messages if their queue is full</span>
+</span><span id="PubSub.broadcast-138"><a href="#PubSub.broadcast-138"><span class="linenos">138</span></a><span class="sd">            - The broadcast is asynchronous - it doesn&#39;t wait for subscribers to process messages</span>
+</span><span id="PubSub.broadcast-139"><a href="#PubSub.broadcast-139"><span class="linenos">139</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PubSub.broadcast-140"><a href="#PubSub.broadcast-140"><span class="linenos">140</span></a>        <span class="n">pending</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Topic</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Peer</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="PubSub.broadcast-141"><a href="#PubSub.broadcast-141"><span class="linenos">141</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+</span><span id="PubSub.broadcast-142"><a href="#PubSub.broadcast-142"><span class="linenos">142</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
+</span><span id="PubSub.broadcast-143"><a href="#PubSub.broadcast-143"><span class="linenos">143</span></a>                <span class="k">if</span> <span class="n">subscribers</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">):</span>
+</span><span id="PubSub.broadcast-144"><a href="#PubSub.broadcast-144"><span class="linenos">144</span></a>                    <span class="n">pending</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
+</span><span id="PubSub.broadcast-145"><a href="#PubSub.broadcast-145"><span class="linenos">145</span></a>
+</span><span id="PubSub.broadcast-146"><a href="#PubSub.broadcast-146"><span class="linenos">146</span></a>        <span class="k">for</span> <span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
+</span><span id="PubSub.broadcast-147"><a href="#PubSub.broadcast-147"><span class="linenos">147</span></a>            <span class="n">dispatcher</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">subscribers</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -478,9 +478,9 @@ prioritisation).</li>
 <h6 id="arguments">Arguments:</h6>
 
 <ul>
-<li><strong>message (Any):</strong>  The message to broadcast.</li>
-<li>*<strong>topics (str):</strong>  Topics to broadcast to.</li>
-<li><strong>dispatcher (Dispatcher):</strong>  A callable that handles the actual message delivery.
+<li><strong>message:</strong>  The message to broadcast.</li>
+<li>*<strong>topics:</strong>  Topics to broadcast to.</li>
+<li><strong>dispatcher:</strong>  A callable that handles the actual message delivery.
 Custom dispatchers can implement filtering, transformation,
 or prioritisation using the metadata stored with each subscriber.</li>
 </ul>
@@ -517,56 +517,56 @@ or prioritisation using the metadata stored with each subscriber.</li>
 <div class="attr function">
             
         <span class="def">async def</span>
-        <span class="name">broadcast_from</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">publisher</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">queues</span><span class="o">.</span><span class="n">Queue</span>,</span><span class="param">	<span class="n">message</span><span class="p">:</span> <span class="n">Any</span>,</span><span class="param">	<span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">dispatcher</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">queues</span><span class="o">.</span><span class="n">Queue</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">queues</span><span class="o">.</span><span class="n">Queue</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">NoneType</span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">default_dispatcher</span><span class="o">&gt;</span></span><span class="return-annotation">):</span></span>
+        <span class="name">broadcast_from</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">publisher</span><span class="p">:</span> <span class="n">Peer</span>,</span><span class="param">	<span class="n">message</span><span class="p">:</span> <span class="n">Message</span>,</span><span class="param">	<span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">dispatcher</span><span class="p">:</span> <span class="n">Dispatcher</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">default_dispatcher</span><span class="o">&gt;</span></span><span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="PubSub.broadcast_from-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#PubSub.broadcast_from"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PubSub.broadcast_from-150"><a href="#PubSub.broadcast_from-150"><span class="linenos">150</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">broadcast_from</span><span class="p">(</span>
-</span><span id="PubSub.broadcast_from-151"><a href="#PubSub.broadcast_from-151"><span class="linenos">151</span></a>        <span class="bp">self</span><span class="p">,</span>
-</span><span id="PubSub.broadcast_from-152"><a href="#PubSub.broadcast_from-152"><span class="linenos">152</span></a>        <span class="n">publisher</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">,</span>
-</span><span id="PubSub.broadcast_from-153"><a href="#PubSub.broadcast_from-153"><span class="linenos">153</span></a>        <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span>
-</span><span id="PubSub.broadcast_from-154"><a href="#PubSub.broadcast_from-154"><span class="linenos">154</span></a>        <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="PubSub.broadcast_from-155"><a href="#PubSub.broadcast_from-155"><span class="linenos">155</span></a>        <span class="n">dispatcher</span><span class="p">:</span> <span class="n">Dispatcher</span> <span class="o">=</span> <span class="n">default_dispatcher</span><span class="p">,</span>
-</span><span id="PubSub.broadcast_from-156"><a href="#PubSub.broadcast_from-156"><span class="linenos">156</span></a>    <span class="p">):</span>
-</span><span id="PubSub.broadcast_from-157"><a href="#PubSub.broadcast_from-157"><span class="linenos">157</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PubSub.broadcast_from-158"><a href="#PubSub.broadcast_from-158"><span class="linenos">158</span></a><span class="sd">        Broadcast a message to all subscribers except the publisher itself.</span>
-</span><span id="PubSub.broadcast_from-159"><a href="#PubSub.broadcast_from-159"><span class="linenos">159</span></a>
-</span><span id="PubSub.broadcast_from-160"><a href="#PubSub.broadcast_from-160"><span class="linenos">160</span></a><span class="sd">        Args:</span>
-</span><span id="PubSub.broadcast_from-161"><a href="#PubSub.broadcast_from-161"><span class="linenos">161</span></a><span class="sd">            publisher (asyncio.Queue): The queue of the publisher to exclude.</span>
-</span><span id="PubSub.broadcast_from-162"><a href="#PubSub.broadcast_from-162"><span class="linenos">162</span></a><span class="sd">                This subscriber will not receive the message.</span>
-</span><span id="PubSub.broadcast_from-163"><a href="#PubSub.broadcast_from-163"><span class="linenos">163</span></a><span class="sd">            message (Any): The message to broadcast.</span>
-</span><span id="PubSub.broadcast_from-164"><a href="#PubSub.broadcast_from-164"><span class="linenos">164</span></a><span class="sd">            *topics (str): Topics to broadcast to.</span>
-</span><span id="PubSub.broadcast_from-165"><a href="#PubSub.broadcast_from-165"><span class="linenos">165</span></a><span class="sd">            dispatcher (Dispatcher): A callable that handles the actual message delivery.</span>
-</span><span id="PubSub.broadcast_from-166"><a href="#PubSub.broadcast_from-166"><span class="linenos">166</span></a><span class="sd">                Custom dispatchers can implement filtering, transformation,</span>
-</span><span id="PubSub.broadcast_from-167"><a href="#PubSub.broadcast_from-167"><span class="linenos">167</span></a><span class="sd">                or prioritisation using the metadata stored with each subscriber.</span>
-</span><span id="PubSub.broadcast_from-168"><a href="#PubSub.broadcast_from-168"><span class="linenos">168</span></a>
-</span><span id="PubSub.broadcast_from-169"><a href="#PubSub.broadcast_from-169"><span class="linenos">169</span></a><span class="sd">        Example:</span>
-</span><span id="PubSub.broadcast_from-170"><a href="#PubSub.broadcast_from-170"><span class="linenos">170</span></a><span class="sd">            ```python</span>
-</span><span id="PubSub.broadcast_from-171"><a href="#PubSub.broadcast_from-171"><span class="linenos">171</span></a><span class="sd">            publisher_queue = asyncio.Queue()</span>
-</span><span id="PubSub.broadcast_from-172"><a href="#PubSub.broadcast_from-172"><span class="linenos">172</span></a><span class="sd">            chat_queue = asyncio.Queue()</span>
-</span><span id="PubSub.broadcast_from-173"><a href="#PubSub.broadcast_from-173"><span class="linenos">173</span></a><span class="sd">            await pubsub.subscribe(publisher_queue, &quot;chat&quot;)</span>
-</span><span id="PubSub.broadcast_from-174"><a href="#PubSub.broadcast_from-174"><span class="linenos">174</span></a><span class="sd">            await pubsub.subscribe(chat, &quot;chat&quot;)</span>
-</span><span id="PubSub.broadcast_from-175"><a href="#PubSub.broadcast_from-175"><span class="linenos">175</span></a>
-</span><span id="PubSub.broadcast_from-176"><a href="#PubSub.broadcast_from-176"><span class="linenos">176</span></a><span class="sd">            await pubsub.broadcast_from(</span>
-</span><span id="PubSub.broadcast_from-177"><a href="#PubSub.broadcast_from-177"><span class="linenos">177</span></a><span class="sd">                publisher_queue,</span>
-</span><span id="PubSub.broadcast_from-178"><a href="#PubSub.broadcast_from-178"><span class="linenos">178</span></a><span class="sd">                &quot;User joined the channel&quot;,</span>
-</span><span id="PubSub.broadcast_from-179"><a href="#PubSub.broadcast_from-179"><span class="linenos">179</span></a><span class="sd">                &quot;chat&quot;</span>
-</span><span id="PubSub.broadcast_from-180"><a href="#PubSub.broadcast_from-180"><span class="linenos">180</span></a><span class="sd">            )</span>
-</span><span id="PubSub.broadcast_from-181"><a href="#PubSub.broadcast_from-181"><span class="linenos">181</span></a><span class="sd">            # chat_queue receives (&quot;chat&quot;, &quot;User joined the channel&quot;)</span>
-</span><span id="PubSub.broadcast_from-182"><a href="#PubSub.broadcast_from-182"><span class="linenos">182</span></a><span class="sd">            # publisher_queue doesn&#39;t receive this message</span>
-</span><span id="PubSub.broadcast_from-183"><a href="#PubSub.broadcast_from-183"><span class="linenos">183</span></a><span class="sd">            ```</span>
-</span><span id="PubSub.broadcast_from-184"><a href="#PubSub.broadcast_from-184"><span class="linenos">184</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PubSub.broadcast_from-185"><a href="#PubSub.broadcast_from-185"><span class="linenos">185</span></a>        <span class="n">pending</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Topic</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Peer</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="PubSub.broadcast_from-186"><a href="#PubSub.broadcast_from-186"><span class="linenos">186</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
-</span><span id="PubSub.broadcast_from-187"><a href="#PubSub.broadcast_from-187"><span class="linenos">187</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
-</span><span id="PubSub.broadcast_from-188"><a href="#PubSub.broadcast_from-188"><span class="linenos">188</span></a>                <span class="n">subscribers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">)</span>
-</span><span id="PubSub.broadcast_from-189"><a href="#PubSub.broadcast_from-189"><span class="linenos">189</span></a>                <span class="k">if</span> <span class="n">subscribers</span><span class="p">:</span>
-</span><span id="PubSub.broadcast_from-190"><a href="#PubSub.broadcast_from-190"><span class="linenos">190</span></a>                    <span class="n">pending</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
-</span><span id="PubSub.broadcast_from-191"><a href="#PubSub.broadcast_from-191"><span class="linenos">191</span></a>
-</span><span id="PubSub.broadcast_from-192"><a href="#PubSub.broadcast_from-192"><span class="linenos">192</span></a>        <span class="k">for</span> <span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
-</span><span id="PubSub.broadcast_from-193"><a href="#PubSub.broadcast_from-193"><span class="linenos">193</span></a>            <span class="n">dispatcher</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">subscribers</span><span class="p">,</span> <span class="n">publisher</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PubSub.broadcast_from-149"><a href="#PubSub.broadcast_from-149"><span class="linenos">149</span></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">broadcast_from</span><span class="p">(</span>
+</span><span id="PubSub.broadcast_from-150"><a href="#PubSub.broadcast_from-150"><span class="linenos">150</span></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="PubSub.broadcast_from-151"><a href="#PubSub.broadcast_from-151"><span class="linenos">151</span></a>        <span class="n">publisher</span><span class="p">:</span> <span class="n">Peer</span><span class="p">,</span>
+</span><span id="PubSub.broadcast_from-152"><a href="#PubSub.broadcast_from-152"><span class="linenos">152</span></a>        <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span>
+</span><span id="PubSub.broadcast_from-153"><a href="#PubSub.broadcast_from-153"><span class="linenos">153</span></a>        <span class="o">*</span><span class="n">topics</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="PubSub.broadcast_from-154"><a href="#PubSub.broadcast_from-154"><span class="linenos">154</span></a>        <span class="n">dispatcher</span><span class="p">:</span> <span class="n">Dispatcher</span> <span class="o">=</span> <span class="n">default_dispatcher</span><span class="p">,</span>
+</span><span id="PubSub.broadcast_from-155"><a href="#PubSub.broadcast_from-155"><span class="linenos">155</span></a>    <span class="p">):</span>
+</span><span id="PubSub.broadcast_from-156"><a href="#PubSub.broadcast_from-156"><span class="linenos">156</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PubSub.broadcast_from-157"><a href="#PubSub.broadcast_from-157"><span class="linenos">157</span></a><span class="sd">        Broadcast a message to all subscribers except the publisher itself.</span>
+</span><span id="PubSub.broadcast_from-158"><a href="#PubSub.broadcast_from-158"><span class="linenos">158</span></a>
+</span><span id="PubSub.broadcast_from-159"><a href="#PubSub.broadcast_from-159"><span class="linenos">159</span></a><span class="sd">        Args:</span>
+</span><span id="PubSub.broadcast_from-160"><a href="#PubSub.broadcast_from-160"><span class="linenos">160</span></a><span class="sd">            publisher: The queue of the publisher to exclude.</span>
+</span><span id="PubSub.broadcast_from-161"><a href="#PubSub.broadcast_from-161"><span class="linenos">161</span></a><span class="sd">                This subscriber will not receive the message.</span>
+</span><span id="PubSub.broadcast_from-162"><a href="#PubSub.broadcast_from-162"><span class="linenos">162</span></a><span class="sd">            message: The message to broadcast.</span>
+</span><span id="PubSub.broadcast_from-163"><a href="#PubSub.broadcast_from-163"><span class="linenos">163</span></a><span class="sd">            *topics: Topics to broadcast to.</span>
+</span><span id="PubSub.broadcast_from-164"><a href="#PubSub.broadcast_from-164"><span class="linenos">164</span></a><span class="sd">            dispatcher: A callable that handles the actual message delivery.</span>
+</span><span id="PubSub.broadcast_from-165"><a href="#PubSub.broadcast_from-165"><span class="linenos">165</span></a><span class="sd">                Custom dispatchers can implement filtering, transformation,</span>
+</span><span id="PubSub.broadcast_from-166"><a href="#PubSub.broadcast_from-166"><span class="linenos">166</span></a><span class="sd">                or prioritisation using the metadata stored with each subscriber.</span>
+</span><span id="PubSub.broadcast_from-167"><a href="#PubSub.broadcast_from-167"><span class="linenos">167</span></a>
+</span><span id="PubSub.broadcast_from-168"><a href="#PubSub.broadcast_from-168"><span class="linenos">168</span></a><span class="sd">        Example:</span>
+</span><span id="PubSub.broadcast_from-169"><a href="#PubSub.broadcast_from-169"><span class="linenos">169</span></a><span class="sd">            ```python</span>
+</span><span id="PubSub.broadcast_from-170"><a href="#PubSub.broadcast_from-170"><span class="linenos">170</span></a><span class="sd">            publisher_queue = asyncio.Queue()</span>
+</span><span id="PubSub.broadcast_from-171"><a href="#PubSub.broadcast_from-171"><span class="linenos">171</span></a><span class="sd">            chat_queue = asyncio.Queue()</span>
+</span><span id="PubSub.broadcast_from-172"><a href="#PubSub.broadcast_from-172"><span class="linenos">172</span></a><span class="sd">            await pubsub.subscribe(publisher_queue, &quot;chat&quot;)</span>
+</span><span id="PubSub.broadcast_from-173"><a href="#PubSub.broadcast_from-173"><span class="linenos">173</span></a><span class="sd">            await pubsub.subscribe(chat, &quot;chat&quot;)</span>
+</span><span id="PubSub.broadcast_from-174"><a href="#PubSub.broadcast_from-174"><span class="linenos">174</span></a>
+</span><span id="PubSub.broadcast_from-175"><a href="#PubSub.broadcast_from-175"><span class="linenos">175</span></a><span class="sd">            await pubsub.broadcast_from(</span>
+</span><span id="PubSub.broadcast_from-176"><a href="#PubSub.broadcast_from-176"><span class="linenos">176</span></a><span class="sd">                publisher_queue,</span>
+</span><span id="PubSub.broadcast_from-177"><a href="#PubSub.broadcast_from-177"><span class="linenos">177</span></a><span class="sd">                &quot;User joined the channel&quot;,</span>
+</span><span id="PubSub.broadcast_from-178"><a href="#PubSub.broadcast_from-178"><span class="linenos">178</span></a><span class="sd">                &quot;chat&quot;</span>
+</span><span id="PubSub.broadcast_from-179"><a href="#PubSub.broadcast_from-179"><span class="linenos">179</span></a><span class="sd">            )</span>
+</span><span id="PubSub.broadcast_from-180"><a href="#PubSub.broadcast_from-180"><span class="linenos">180</span></a><span class="sd">            # chat_queue receives (&quot;chat&quot;, &quot;User joined the channel&quot;)</span>
+</span><span id="PubSub.broadcast_from-181"><a href="#PubSub.broadcast_from-181"><span class="linenos">181</span></a><span class="sd">            # publisher_queue doesn&#39;t receive this message</span>
+</span><span id="PubSub.broadcast_from-182"><a href="#PubSub.broadcast_from-182"><span class="linenos">182</span></a><span class="sd">            ```</span>
+</span><span id="PubSub.broadcast_from-183"><a href="#PubSub.broadcast_from-183"><span class="linenos">183</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PubSub.broadcast_from-184"><a href="#PubSub.broadcast_from-184"><span class="linenos">184</span></a>        <span class="n">pending</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Topic</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Peer</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="PubSub.broadcast_from-185"><a href="#PubSub.broadcast_from-185"><span class="linenos">185</span></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+</span><span id="PubSub.broadcast_from-186"><a href="#PubSub.broadcast_from-186"><span class="linenos">186</span></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">:</span>
+</span><span id="PubSub.broadcast_from-187"><a href="#PubSub.broadcast_from-187"><span class="linenos">187</span></a>                <span class="n">subscribers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topic</span><span class="p">)</span>
+</span><span id="PubSub.broadcast_from-188"><a href="#PubSub.broadcast_from-188"><span class="linenos">188</span></a>                <span class="k">if</span> <span class="n">subscribers</span><span class="p">:</span>
+</span><span id="PubSub.broadcast_from-189"><a href="#PubSub.broadcast_from-189"><span class="linenos">189</span></a>                    <span class="n">pending</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
+</span><span id="PubSub.broadcast_from-190"><a href="#PubSub.broadcast_from-190"><span class="linenos">190</span></a>
+</span><span id="PubSub.broadcast_from-191"><a href="#PubSub.broadcast_from-191"><span class="linenos">191</span></a>        <span class="k">for</span> <span class="n">topic</span><span class="p">,</span> <span class="n">subscribers</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
+</span><span id="PubSub.broadcast_from-192"><a href="#PubSub.broadcast_from-192"><span class="linenos">192</span></a>            <span class="n">dispatcher</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">subscribers</span><span class="p">,</span> <span class="n">publisher</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -575,11 +575,11 @@ or prioritisation using the metadata stored with each subscriber.</li>
 <h6 id="arguments">Arguments:</h6>
 
 <ul>
-<li><strong>publisher (asyncio.Queue):</strong>  The queue of the publisher to exclude.
+<li><strong>publisher:</strong>  The queue of the publisher to exclude.
 This subscriber will not receive the message.</li>
-<li><strong>message (Any):</strong>  The message to broadcast.</li>
-<li>*<strong>topics (str):</strong>  Topics to broadcast to.</li>
-<li><strong>dispatcher (Dispatcher):</strong>  A callable that handles the actual message delivery.
+<li><strong>message:</strong>  The message to broadcast.</li>
+<li>*<strong>topics:</strong>  Topics to broadcast to.</li>
+<li><strong>dispatcher:</strong>  A callable that handles the actual message delivery.
 Custom dispatchers can implement filtering, transformation,
 or prioritisation using the metadata stored with each subscriber.</li>
 </ul>
@@ -608,57 +608,62 @@ or prioritisation using the metadata stored with each subscriber.</li>
 
                             </div>
                 </section>
-                <section id="str">
+                <section id="Topic">
                     <div class="attr variable">
-            <span class="name">str</span>
+            <span class="def">type</span> <span class="name">Topic</span>        =
+<span class="default_value">str</span>
 
         
     </div>
-    <a class="headerlink" href="#str"></a>
+    <a class="headerlink" href="#Topic"></a>
     
     
 
                 </section>
-                <section id="Any">
+                <section id="Message">
                     <div class="attr variable">
-            <span class="name">Any</span>
+            <span class="def">type</span> <span class="name">Message</span>        =
+<span class="default_value">Any</span>
 
         
     </div>
-    <a class="headerlink" href="#Any"></a>
+    <a class="headerlink" href="#Message"></a>
     
     
 
                 </section>
-                <section id="Callable">
+                <section id="Dispatcher">
                     <div class="attr variable">
-            <span class="name">Callable</span>
+            <span class="def">type</span> <span class="name">Dispatcher</span>        =
+<span class="default_value">Callable[[Topic, Message, Subscribers, Peer | None], NoneType]</span>
 
         
     </div>
-    <a class="headerlink" href="#Callable"></a>
+    <a class="headerlink" href="#Dispatcher"></a>
     
     
 
                 </section>
-                <section id="dict">
+                <section id="Subscribers">
                     <div class="attr variable">
-            <span class="name">dict</span>
+            <span class="def">type</span> <span class="name">Subscribers</span>        =
+<span class="default_value">dict[Peer, dict]</span>
 
         
     </div>
-    <a class="headerlink" href="#dict"></a>
+    <a class="headerlink" href="#Subscribers"></a>
     
     
 
                 </section>
-                <section id="Queue">
+                <section id="Peer">
                     <div class="attr variable">
-            <span class="name">Queue</span>
+            <span class="def">type</span> <span class="name">Peer</span>        =
+<span class="default_value">asyncio.queues.Queue</span>
 
         
     </div>
-    <a class="headerlink" href="#Queue"></a>
+    <a class="headerlink" href="#Peer"></a>
     
     
 

@@ -2,12 +2,12 @@ import asyncio
 from collections import defaultdict
 from typing import Any, Optional, Callable
 
-Topic = str
-Message = Any
-Peer = asyncio.Queue
-Subscribers = dict[Peer, dict]
-Registry = dict[Topic, Subscribers]
-Dispatcher = Callable[[Topic, Message, Subscribers, Optional[Peer]], None]
+type Topic = str
+type Message = Any
+type Peer = asyncio.Queue
+type Subscribers = dict[Peer, dict]
+type Registry = dict[Topic, Subscribers]
+type Dispatcher = Callable[[Topic, Message, Subscribers, Optional[Peer]], None]
 
 
 def default_dispatcher(
@@ -48,17 +48,17 @@ class PubSub:
         "Lock for thread-safe operations on the registry"
 
     async def subscribe(
-        self, peer: asyncio.Queue, *topics: str, metadata: Optional[dict] = None
+        self, peer: Peer, *topics: str, metadata: Optional[dict] = None
     ) -> None:
         """
         Subscribe a queue to one or more topics.
 
         Args:
-            subscriber (asyncio.Queue): The queue that will receive messages.
+            subscriber: The queue that will receive messages.
                 This queue will receive messages as (topic, message) tuples.
-            *topics (str): Variable number of topic strings to subscribe to.
+            *topics: Variable number of topic strings to subscribe to.
                 The subscriber will receive messages published to any of these topics.
-            metadata (Optional[dict]): Arbitrary data attached to this subscription.
+            metadata: Arbitrary data attached to this subscription.
                 The dispatcher can use it for custom delivery logic (e.g., filtering,
                 prioritisation).
 
@@ -81,13 +81,13 @@ class PubSub:
             for topic in topics:
                 self._topics[topic][peer] = metadata
 
-    async def unsubscribe(self, peer: asyncio.Queue, *topics: str):
+    async def unsubscribe(self, peer: Peer, *topics: str):
         """
         Unsubscribe a queue from one or more topics.
 
         Args:
-            subscriber (asyncio.Queue): The queue to unsubscribe.
-            *topics (str): Topics to unsubscribe from.
+            subscriber: The queue to unsubscribe.
+            *topics: Topics to unsubscribe from.
 
         Example:
             ```python
@@ -115,9 +115,9 @@ class PubSub:
         Broadcast a message to all subscribers of the specified topics.
 
         Args:
-            message (Any): The message to broadcast.
-            *topics (str): Topics to broadcast to.
-            dispatcher (Dispatcher): A callable that handles the actual message delivery.
+            message: The message to broadcast.
+            *topics: Topics to broadcast to.
+            dispatcher: A callable that handles the actual message delivery.
                 Custom dispatchers can implement filtering, transformation,
                 or prioritisation using the metadata stored with each subscriber.
 
@@ -147,7 +147,7 @@ class PubSub:
 
     async def broadcast_from(
         self,
-        publisher: asyncio.Queue,
+        publisher: Peer,
         message: Message,
         *topics: str,
         dispatcher: Dispatcher = default_dispatcher,
@@ -156,11 +156,11 @@ class PubSub:
         Broadcast a message to all subscribers except the publisher itself.
 
         Args:
-            publisher (asyncio.Queue): The queue of the publisher to exclude.
+            publisher: The queue of the publisher to exclude.
                 This subscriber will not receive the message.
-            message (Any): The message to broadcast.
-            *topics (str): Topics to broadcast to.
-            dispatcher (Dispatcher): A callable that handles the actual message delivery.
+            message: The message to broadcast.
+            *topics: Topics to broadcast to.
+            dispatcher: A callable that handles the actual message delivery.
                 Custom dispatchers can implement filtering, transformation,
                 or prioritisation using the metadata stored with each subscriber.
 

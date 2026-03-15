@@ -2,15 +2,13 @@ Generate docs:
 
 `uvx pdoc src/phoenix_pubsub/ -o ./docs --docformat google`
 
-Remove from the header lines which start with:
-
+replace
 ```html
     <style>/*! syntax-highlighting.css */
     <style>/*! theme.css */
 ```
 
-Add to the header:
-
+with
 ```html
 <!-- Dark theme styles -->
 <link rel="stylesheet" href="theme.css" media="(prefers-color-scheme: dark)">

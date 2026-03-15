@@ -1,6 +1,6 @@
 [project]
 name = "phoenix-pubsub"
-version = "0.5.0"
+version = "0.5.1"
 description = "A topic-based publish-subscribe system for asyncio applications, inspired by Phoenix's PubSub"
 readme = "README.md"
 authors = [
