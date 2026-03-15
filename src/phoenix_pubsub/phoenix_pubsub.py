@@ -15,7 +15,7 @@ def default_dispatcher(
     message: Message,
     subscribers: Subscribers,
     publisher: Optional[Peer] = None,
-) -> None:
+):
     def try_put_message(peer: asyncio.Queue, topic: str, message: Message):
         try:
             peer.put_nowait((topic, message))
@@ -25,9 +25,8 @@ def default_dispatcher(
 
     if publisher:  # broadcast_from
         for peer, _metadata in subscribers.items():
-            if peer is publisher:
-                continue
-            try_put_message(peer, topic, message)
+            if peer is not publisher:
+                try_put_message(peer, topic, message)
     else:  # broadcast
         for peer in subscribers.keys():
             try_put_message(peer, topic, message)
@@ -49,7 +48,7 @@ class PubSub:
 
     async def subscribe(
         self, peer: Peer, *topics: str, metadata: Optional[dict] = None
-    ) -> None:
+    ):
         """
         Subscribe a queue to one or more topics.
 
