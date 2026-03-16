@@ -88,7 +88,7 @@ class PubSub:
                 prioritisation).
 
         Example:
-            ```python
+            ```
             queue = asyncio.Queue()
 
             # Subscribe to single topic
@@ -115,7 +115,7 @@ class PubSub:
             *topics: Topics to unsubscribe from.
 
         Example:
-            ```python
+            ```
             # Unsubscribe from a single topic
             await pubsub.unsubscribe(queue, "weather")
 
@@ -147,7 +147,7 @@ class PubSub:
                 or prioritisation using the metadata stored with each subscriber.
 
         Example:
-            ```python
+            ```
             await pubsub.broadcast("Hello world!", "greetings")
             # Subscribers receive: ("greetings", "Hello world!")
 
@@ -190,7 +190,7 @@ class PubSub:
                 or prioritisation using the metadata stored with each subscriber.
 
         Example:
-            ```python
+            ```
             publisher_queue = asyncio.Queue()
             chat_queue = asyncio.Queue()
             await pubsub.subscribe(publisher_queue, "chat")
