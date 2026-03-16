@@ -13,7 +13,7 @@ A topic-based publish‑subscribe system for `asyncio` applications, inspired by
 - Subscribe to one or more topics
 - Broadcast messages to all subscribers of a topic
 - Broadcast messages while excluding the publisher itself
-- Subscribers metadata & Custom dispatchers – attach metadata to subscriptions and implement your own delivery logic by passing a dispatcher function `broadcast` / `broadcast_from`
+- Subscribers metadata & Custom dispatchers – attach metadata to subscriptions and implement your own delivery logic by passing a dispatcher function into `broadcast` / `broadcast_from`
 
 ## Installation
 
