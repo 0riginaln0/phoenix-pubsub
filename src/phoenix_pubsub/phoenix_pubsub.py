@@ -19,6 +19,7 @@ def synchronous_dispatcher(
     """
     Blocks the caller until all put attempts are made.
     """
+
     def try_put_message(peer: asyncio.Queue, topic: str, message: Message):
         try:
             peer.put_nowait((topic, message))
@@ -34,6 +35,7 @@ def synchronous_dispatcher(
         for peer in subscribers.keys():
             try_put_message(peer, topic, message)
 
+
 def concurrent_dispatcher(
     topic: Topic,
     message: Message,
@@ -43,16 +45,18 @@ def concurrent_dispatcher(
     """
     Spawns one background put attempt task per subscriber.
     """
+
     async def try_put_message(peer: asyncio.Queue, topic: str, message: Message):
         try:
             peer.put_nowait((topic, message))
         except (asyncio.QueueFull, asyncio.QueueShutDown):
             pass
-    
+
     for peer in subscribers.keys():
         if publisher and peer is publisher:
             continue
         asyncio.create_task(try_put_message(peer, topic, message))
+
 
 class PubSub:
     """
@@ -157,7 +161,7 @@ class PubSub:
             - Slow consumers may miss messages if their queue is full
             - The broadcast is asynchronous - it doesn't wait for subscribers to process messages
         """
-        pending: list[tuple[Topic, dict[Peer, dict]]] = []
+        pending: list[tuple[Topic, Subscribers]] = []
         async with self._lock:
             for topic in topics:
                 if subscribers := self._topics.get(topic):
@@ -201,7 +205,7 @@ class PubSub:
             # publisher_queue doesn't receive this message
             ```
         """
-        pending: list[tuple[Topic, dict[Peer, dict]]] = []
+        pending: list[tuple[Topic, Subscribers]] = []
         async with self._lock:
             for topic in topics:
                 subscribers = self._topics.get(topic)
