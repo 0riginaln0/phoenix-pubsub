@@ -133,16 +133,6 @@
       ]
     },
     {
-      "title": "Handling Slow Consumers",
-      "purpose": "Understanding message dropping behavior for queues at maxsize and backpressure handling",
-      "parent": "Usage Patterns and Examples",
-      "page_notes": [
-        {
-          "content": ""
-        }
-      ]
-    },
-    {
       "title": "Multi-Topic Broadcasting",
       "purpose": "Broadcasting a single message to multiple topics simultaneously",
       "parent": "Usage Patterns and Examples",
@@ -251,17 +241,7 @@
     },
     {
       "title": "Documentation System Internals",
-      "purpose": "For maintainers: how the documentation website works, including search and theming",
-      "page_notes": [
-        {
-          "content": ""
-        }
-      ]
-    },
-    {
-      "title": "Search Functionality",
-      "purpose": "How the elasticlunr-based client-side search is implemented and indexed",
-      "parent": "Documentation System Internals",
+      "purpose": "For maintainers: how the documentation website works, including theming",
       "page_notes": [
         {
           "content": ""
@@ -271,16 +251,6 @@
     {
       "title": "Theme System",
       "purpose": "CSS architecture for light/dark themes and syntax highlighting",
-      "parent": "Documentation System Internals",
-      "page_notes": [
-        {
-          "content": ""
-        }
-      ]
-    },
-    {
-      "title": "CI/CD Pipeline for Docs",
-      "purpose": "GitHub Actions workflow for automated documentation builds and GitHub Pages deployment",
       "parent": "Documentation System Internals",
       "page_notes": [
         {

@@ -11,14 +11,12 @@ async def test_pubsub():
     queue_news = asyncio.Queue()
     queue_all = asyncio.Queue()  # listens to multiple topics
     queue_publisher = asyncio.Queue()
-    queue_slow = asyncio.Queue(maxsize=1)  # will demonstrate dropped messages
 
     # Subscribe to topics
     await pubsub.subscribe(queue_alerts, "alerts")
     await pubsub.subscribe(queue_news, "news")
     await pubsub.subscribe(queue_all, "alerts", "news", "sports", "chat")
     await pubsub.subscribe(queue_publisher, "chat")
-    await pubsub.subscribe(queue_slow, "alerts")
 
     # 1. Broadcast to a single topic
     await pubsub.broadcast("System alert!", "alerts")
@@ -30,11 +28,6 @@ async def test_pubsub():
 
     # queue_all should receive it
     topic, msg = await queue_all.get()
-    assert topic == "alerts"
-    assert msg == "System alert!"
-
-    # queue_slow should receive it
-    topic, msg = await queue_slow.get()
     assert topic == "alerts"
     assert msg == "System alert!"
 
@@ -88,30 +81,7 @@ async def test_pubsub():
     assert topic == "news"
     assert msg == "Late news"
 
-    # 5. Slow consumer misses messages
-    await pubsub.broadcast("System alert 1", "alerts")
-    await pubsub.broadcast("System alert 2", "alerts")
-    await pubsub.broadcast("System alert 3", "alerts")
-
-    # queue_alerts receives all three
-    for i in range(1, 4):
-        topic, msg = await asyncio.wait_for(queue_alerts.get(), timeout=0.1)
-        assert topic == "alerts"
-        assert msg == f"System alert {i}"
-
-    # queue_slow receives only the first alert (the rest are dropped because its queue is full)
-    topic, msg = await queue_slow.get()
-    assert topic == "alerts"
-    assert msg == "System alert 1"
-
-    # No second message arrives
-    try:
-        await asyncio.wait_for(queue_slow.get(), timeout=0.1)
-        assert False, "queue_slow should not have received a second message"
-    except asyncio.TimeoutError:
-        pass  # Expected
-
-    # 6. Custom dispatcher
+    # 5. Custom dispatcher
     def category_filter_dispatcher(
         topic: Topic,
         message: Message,

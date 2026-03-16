@@ -137,46 +137,6 @@ async def main():
 asyncio.run(main())
 ```
 
-
-### Slow consumer - Messages are dropped
-
-```python
-import asyncio
-from phoenix_pubsub import PubSub
-
-async def main():
-    pubsub = PubSub()
-    slow = asyncio.Queue(maxsize=1)  # can hold only one message
-    fast = asyncio.Queue()
-
-    await pubsub.subscribe(slow, "alerts")
-    await pubsub.subscribe(fast, "alerts")
-
-    await pubsub.broadcast("Alert 1", "alerts")
-    await pubsub.broadcast("Alert 2", "alerts")
-    await pubsub.broadcast("Alert 3", "alerts")
-
-    # Fast consumer receives all three
-    topic, msg = await fast.get()
-    print(topic, msg)  # alerts Alert 1
-    topic, msg = await fast.get()
-    print(topic, msg)  # alerts Alert 2
-    topic, msg = await fast.get()
-    print(topic, msg)  # alerts Alert 3
-
-    # Slow consumer receives only the first (others are dropped)
-    topic, msg = await slow.get()
-    print(topic, msg)  # alerts Alert 1
-
-    try:
-        await asyncio.wait_for(slow.get(), timeout=0.1)
-        print("Unexpected second message")
-    except asyncio.TimeoutError:
-        print("Slow queue received no further messages (as expected)")
-
-asyncio.run(main())
-```
-
 ### Metadata & Custom dispatcher
 
 The library provides two dispatchers: `synchronous_dispatcher`, `concurrent_dispatcher`. The default one is synchronous.
