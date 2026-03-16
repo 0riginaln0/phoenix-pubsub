@@ -181,7 +181,10 @@ asyncio.run(main())
 
 The library provides two dispatchers: `synchronous_dispatcher`, `concurrent_dispatcher`. The default one is synchronous.
 
-You can create and pass your own dispatcher like that:
+You can create and pass your own dispatchers like that:
+
+
+#### Filter dispatcher
 
 ```python
 import asyncio
@@ -254,3 +257,71 @@ async def main():
 asyncio.run(main())
 ```
 
+#### Batched dispatcher
+
+```python
+import asyncio
+from phoenix_pubsub import PubSub, Topic, Message, Subscribers, Peer
+from typing import Optional
+from functools import partial
+
+
+def batched_dispatcher(
+    topic: Topic,
+    message: Message,
+    subscribers: Subscribers,
+    publisher: Optional[Peer] = None,
+    *,
+    batch_size: int = 5,
+) -> None:
+    """
+    Groups subscribers into batches and spawns one background task per batch.
+    """
+
+    async def process_batch(
+        batch_peers: list[Peer], topic: str, message: Message
+    ) -> None:
+        for peer in batch_peers:
+            try:
+                peer.put_nowait((topic, message))
+            except (asyncio.QueueFull, asyncio.QueueShutDown):
+                pass
+
+    if publisher:  # broadcast_from
+        peers = [peer for peer in subscribers.keys() if peer is not publisher]
+    else:  # broadcast
+        peers = [peer for peer in subscribers.keys()]
+
+    for i in range(0, len(peers), batch_size):
+        batch = peers[i : i + batch_size]
+        asyncio.create_task(process_batch(batch, topic, message))
+
+
+async def main():
+    pubsub = PubSub()
+
+    queues = [asyncio.Queue() for _ in range(7)]
+
+    for q in queues:
+        await pubsub.subscribe(q, "notifications")
+
+    await pubsub.broadcast(
+        "Important notification 1",
+        "notifications",
+        dispatcher=batched_dispatcher,
+    )
+    getters = [q.get() for q in queues]
+    await asyncio.gather(*getters)
+
+    await pubsub.broadcast(
+        "Important notification 2",
+        "notifications",
+        dispatcher=partial(batched_dispatcher, batch_size=10),
+    )
+    getters = [q.get() for q in queues]
+    await asyncio.gather(*getters)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
