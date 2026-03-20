@@ -19,6 +19,7 @@ async def test_pubsub():
     await pubsub.subscribe(queue_publisher, "chat")
 
     # 1. Broadcast to a single topic
+    print("✅ 1. Broadcast to a single topic")
     await pubsub.broadcast("System alert!", "alerts")
 
     # queue_alerts should receive it
@@ -32,6 +33,7 @@ async def test_pubsub():
     assert msg == "System alert!"
 
     # 2. Broadcast to multiple topics
+    print("✅ 2. Broadcast to multiple topics")
     await pubsub.broadcast("Score update", "news", "sports")
 
     # queue_news receives the news message
@@ -48,6 +50,7 @@ async def test_pubsub():
     assert set(received) == expected_msgs
 
     # 3. Broadcast from a publisher (exclude itself)
+    print("✅ 3. Broadcast from a publisher (exclude itself)")
     await pubsub.broadcast_from(queue_publisher, "Hello everyone!", "chat")
 
     # queue_all receives it
@@ -64,6 +67,7 @@ async def test_pubsub():
         pass  # Expected – no message arrived
 
     # 4. Unsubscribe and verify no further messages
+    print("✅ 4. Unsubscribe and verify no further messages")
     await pubsub.unsubscribe(queue_news, "news")
     await pubsub.broadcast("Late news", "news")
 
@@ -82,6 +86,7 @@ async def test_pubsub():
     assert msg == "Late news"
 
     # 5. Custom dispatcher
+    print("✅ 5. Custom dispatcher")
     def category_filter_dispatcher(
         topic: Topic,
         message: Message,
@@ -147,7 +152,7 @@ async def test_pubsub():
 
     assert queue3.empty()
 
-    print("All tests passed!")
+    print("👑 All tests passed!")
 
 
 if __name__ == "__main__":
